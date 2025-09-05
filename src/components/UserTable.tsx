@@ -122,11 +122,12 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
     {
       header: 'Username',
       accessorKey: 'username',
-      size: 180,
+      size: 160,
       filterFn: multiColumnFilter,
       cell: ({ row }) => (
         <p>
-          {row.getValue('username')}{' '}
+          {row.getValue('username')}
+          <br />
           <span className="text-xs text-neutral-500">
             ({row.original.userId})
           </span>

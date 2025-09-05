@@ -9,6 +9,22 @@ import GuildConfiguration from '@/models/GuildConfiguration'
 import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v10'
 
+const guildCache = new Map<string, DiscordGuild[]>()
+
+export const fetchUserGuilds = async (token: string, userId: string) => {
+  const cacheKey = `${userId}`
+  if (guildCache.has(cacheKey)) return guildCache.get(cacheKey)!
+
+  const { data } = await axios.get<DiscordGuild[]>(
+    'https://discord.com/api/v10/users/@me/guilds',
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+
+  guildCache.set(cacheKey, data)
+  setTimeout(() => guildCache.delete(cacheKey), 60_000)
+  return data
+}
+
 export const getUserGuilds = cache(
   async (session: Session): Promise<DiscordGuild[]> => {
     if (!session.userId) return []
@@ -17,42 +33,53 @@ export const getUserGuilds = cache(
 
     await connectToDatabase()
 
+    const userGuilds = await fetchUserGuilds(
+      session.accessToken!,
+      session.userId
+    )
+
     const allGuildConfigs = await GuildConfiguration.find({
       managerRoleId: { $exists: true, $ne: '' },
     })
 
     const accessibleGuilds: DiscordGuild[] = []
 
-    for (const config of allGuildConfigs) {
-      try {
-        const { data: member } = await axios.get<{ roles: string[] }>(
-          `https://discord.com/api/v10/guilds/${config.guildId}/members/${session.userId}`,
-          { headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` } }
-        )
+    for (const guild of userGuilds) {
+      let includeGuild = false
 
-        if (member.roles.includes(config.managerRoleId)) {
-          const { data: guild } = await axios.get<DiscordGuild>(
-            `https://discord.com/api/v10/guilds/${config.guildId}`,
+      const isAdmin = (Number(guild.permissions) & 0x8) === 0x8
+      if (isAdmin) {
+        includeGuild = true
+      }
+
+      const dbConfig = allGuildConfigs.find((c) => c.guildId === guild.id)
+      if (dbConfig) {
+        try {
+          const { data: member } = await axios.get<{ roles: string[] }>(
+            `https://discord.com/api/v10/guilds/${guild.id}/members/${session.userId}`,
             {
               headers: {
                 Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
               },
             }
           )
-          accessibleGuilds.push(guild)
+
+          if (member.roles.includes(dbConfig.managerRoleId)) includeGuild = true
+        } catch (err) {
+          if (
+            axios.isAxiosError(err) &&
+            (err.response?.status === 403 || err.response?.status === 404)
+          ) {
+            continue
+          }
+          console.error(
+            `Failed to fetch member roles for guild ${guild.id}`,
+            err
+          )
         }
-      } catch (err) {
-        if (
-          axios.isAxiosError(err) &&
-          (err.response?.status === 403 || err.response?.status === 404)
-        ) {
-          continue
-        }
-        console.error(
-          `Failed to fetch member roles for guild ${config.guildId}`,
-          err
-        )
       }
+
+      if (includeGuild) accessibleGuilds.push(guild)
     }
 
     return accessibleGuilds
