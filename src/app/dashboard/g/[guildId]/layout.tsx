@@ -1,10 +1,11 @@
 import { getGuildName, isBotInGuild } from '@/actions/discord'
-import BotNotInGuild from '@/components/Errors/BotNotInGuild'
+import { getUserPermissions } from '@/actions/perms'
 import GuildConfigSidebar from '@/components/GuildConfigSidebar'
+import BotNotInGuild from '@/components/states/BotNotInGuild'
+import NoPerms from '@/components/states/NoPerms'
 import { authOptions } from '@/lib/authOptions'
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import React from 'react'
 
 interface GuildConfLayoutProps {
   children: React.ReactNode
@@ -18,12 +19,22 @@ const GuildConfLayout = async ({ children, params }: GuildConfLayoutProps) => {
   if (!session?.accessToken) redirect('/')
 
   const isInGuild = await isBotInGuild(guildId)
-  const guildName = await getGuildName(session.accessToken, guildId)
-  if (!isInGuild || !guildName) return <BotNotInGuild />
+  if (!isInGuild) return <BotNotInGuild />
+
+  const guildName = await getGuildName(guildId)
+  if (!guildName) return <BotNotInGuild />
+
+  const { isAdmin, isManager } = await getUserPermissions(guildId, session)
+
+  if (!isAdmin && !isManager) return <NoPerms />
 
   return (
     <div className="flex h-full">
-      <GuildConfigSidebar guildId={guildId} guildName={guildName} />
+      <GuildConfigSidebar
+        guildId={guildId}
+        guildName={guildName}
+        isAdmin={isAdmin}
+      />
 
       <main className="flex-1 p-6 overflow-auto">{children}</main>
     </div>

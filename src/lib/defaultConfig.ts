@@ -1,6 +1,3 @@
-export const LOTTERY_TOTAL_NUMBERS = 40
-export const LOTTERY_NUM_TO_DRAW = 4
-
 export const readableGameValueNames = [
   { name: 'Maximum Bet Amount', value: 'maxBet' },
   { name: 'Minimum Bet Amount', value: 'minBet' },
@@ -10,6 +7,28 @@ export const readableGameValueNames = [
   { name: 'One-In Chance (e.g. 1 in 10,000)', value: 'oneInChance' },
   { name: 'Symbol Weights', value: 'symbolWeights' },
 ]
+
+export const readableGamesNames = [
+  { name: 'Dice', value: 'dice' },
+  { name: 'Coin Flip', value: 'coinflip' },
+  { name: 'Slots', value: 'slots' },
+  { name: 'Lottery', value: 'lottery' },
+  { name: 'Rock Paper Scissors', value: 'rps' },
+  { name: 'Golden Jackpot', value: 'goldenJackpot' },
+  { name: 'Blackjack', value: 'blackjack' },
+  { name: 'Prediction', value: 'prediction' },
+]
+
+export function getReadableName(
+  key: string,
+  map: { name: string; value: string }[]
+): string {
+  const found = map.find((item) => item.value === key)
+  return found ? found.name : key
+}
+
+export const LOTTERY_TOTAL_NUMBERS = 40
+export const LOTTERY_NUM_TO_DRAW = 4
 
 const defaultCasinoSettings = {
   dice: {

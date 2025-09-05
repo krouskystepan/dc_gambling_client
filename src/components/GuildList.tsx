@@ -1,6 +1,6 @@
 'use client'
 
-import { DiscordGuild } from '@/types/discord'
+import { DiscordGuild } from '@/types/types'
 
 export default function GuildList({ guilds }: { guilds: DiscordGuild[] }) {
   return (

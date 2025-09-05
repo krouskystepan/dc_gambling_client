@@ -6,7 +6,6 @@ import { Session } from 'next-auth'
 import { signOut, signIn } from 'next-auth/react'
 import { Button } from './ui/button'
 import Link from 'next/link'
-import { Separator } from './ui/separator'
 
 const LoginBox = ({ session }: { session: Session | null }) => {
   return (
@@ -42,10 +41,6 @@ const LoginBox = ({ session }: { session: Session | null }) => {
               <LoginButton />
             </div>
           )}
-
-          <Separator className="my-4 bg-yellow-500/30 rounded-xl" />
-
-          <DemoButton />
         </div>
       </div>
     </motion.div>
@@ -89,19 +84,6 @@ const ContinueToDiscordButton = () => {
       >
         <Dice5 className="h-5 w-5" /> Continue to Dashboard
       </Link>
-    </Button>
-  )
-}
-
-const DemoButton = () => {
-  return (
-    <Button
-      variant={'link'}
-      asChild
-      className="w-full rounded-xl text-center px-4 py-3 border border-emerald-600 h-12 hover:scale-[1.02] hover:no-underline bg-background"
-      size={'lg'}
-    >
-      <Link href={'/dashboard/demo'}>Demo</Link>
     </Button>
   )
 }

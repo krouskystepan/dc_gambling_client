@@ -1,5 +1,5 @@
 import defaultCasinoSettings from '@/lib/defaultConfig'
-import { Schema, model, Document } from 'mongoose'
+import { Schema, model, models, Document } from 'mongoose'
 
 export type GuildConfiguration = Document & {
   guildId: string
@@ -31,62 +31,27 @@ const guildConfigurationSchema = new Schema<GuildConfiguration>({
     index: true,
   },
   atmChannelIds: {
-    actions: {
-      type: String,
-      default: '',
-    },
-    logs: {
-      type: String,
-      default: '',
-    },
+    actions: { type: String, default: '' },
+    logs: { type: String, default: '' },
   },
-  adminChannelIds: {
-    type: [String],
-    default: [],
-  },
-  casinoChannelIds: {
-    type: [String],
-    default: [],
-  },
+  adminChannelIds: { type: [String], default: [] },
+  casinoChannelIds: { type: [String], default: [] },
   predictionChannelIds: {
-    actions: {
-      type: [String],
-      default: [],
-    },
-    logs: {
-      type: String,
-      default: '',
-    },
+    actions: { type: String, default: '' },
+    logs: { type: String, default: '' },
   },
-  managerRoleId: {
-    type: String,
-    default: '',
-  },
+  managerRoleId: { type: String, default: '' },
   casinoSettings: {
     type: Schema.Types.Mixed,
     default: defaultCasinoSettings,
   },
   vipSettings: {
-    roleId: {
-      type: String,
-      default: '',
-    },
-    categoryId: {
-      type: String,
-      default: '',
-    },
-    pricePerDay: {
-      type: Number,
-      default: 0,
-    },
-    pricePerCreate: {
-      type: Number,
-      default: 0,
-    },
+    roleId: { type: String, default: '' },
+    categoryId: { type: String, default: '' },
+    pricePerDay: { type: Number, default: 0 },
+    pricePerCreate: { type: Number, default: 0 },
   },
 })
 
-export default model<GuildConfiguration>(
-  'GuildConfiguration',
-  guildConfigurationSchema
-)
+export default models.GuildConfiguration ||
+  model<GuildConfiguration>('GuildConfiguration', guildConfigurationSchema)
