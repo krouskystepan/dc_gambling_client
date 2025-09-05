@@ -17,9 +17,10 @@ import defaultCasinoSettings, {
   readableGamesNames,
   readableGameValueNames,
 } from '@/lib/defaultConfig'
-import { calculateRTP, CasinoSettings } from '@/lib/utils'
+import { calculateRTP } from '@/lib/utils'
 import { RotateCw } from 'lucide-react'
 import { Button } from '../ui/button'
+import { CasinoSettingsValues } from '@/types/types'
 
 type CasinoSettingsFormValues = z.infer<typeof casinoSettingsSchema>
 
@@ -70,7 +71,7 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
               <h4 className="text-xl font-semibold text-yellow-400">
                 {getReadableName(game, readableGamesNames)}{' '}
                 <span className="text-xs text-gray-400">{`(RTP: ${Number(
-                  calculateRTP(game as keyof CasinoSettings, settings)
+                  calculateRTP(game as keyof CasinoSettingsValues, settings)
                 ).toFixed(2)})`}</span>
               </h4>
 
@@ -115,7 +116,7 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
                                       onClick={() => {
                                         const defaultValue = (
                                           defaultCasinoSettings[
-                                            game as keyof CasinoSettings
+                                            game as keyof CasinoSettingsValues
                                           ] as Record<
                                             string,
                                             number | Record<string, number>
