@@ -49,7 +49,7 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
     defaultValues: {
       atm: { actions: '', logs: '' },
       casino: { casinoChannelIds: [] },
-      admin: { adminChannelIds: [] },
+      admin: { adminChannelIds: '' },
       prediction: { actions: '', logs: '' },
     },
   })
@@ -75,7 +75,7 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
           casinoChannelIds: channels?.casino?.casinoChannelIds || [],
         },
         admin: {
-          adminChannelIds: channels?.admin?.adminChannelIds || [],
+          adminChannelIds: channels?.admin?.adminChannelIds || '',
         },
         prediction: {
           actions: channels?.prediction?.actions || '',
@@ -251,50 +251,25 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
               render={({ field }) => (
                 <FormItem>
                   <Label>Admin Channels</Label>
-                  <FormControl>
-                    <MultipleSelector
-                      className="bg-muted border-transparent shadow-none"
-                      commandProps={{
-                        label: 'Select channels',
-                        shouldFilter: false,
-                      }}
-                      placeholder="Select channels"
-                      emptyIndicator={
-                        <p className="text-center text-sm">No results found</p>
-                      }
-                      value={(field.value ?? []).map((id) => {
-                        const channel = channels.find((c) => c.id === id)
-                        return { label: channel?.name ?? id, value: id }
-                      })}
-                      defaultOptions={channels.map((channel) => ({
-                        label: channel.name,
-                        value: channel.id,
-                      }))}
-                      onChange={(options) =>
-                        field.onChange(options.map((opt) => opt.value))
-                      }
-                      selectFirstItem={false}
-                      onSearchSync={(search) => {
-                        const term = search.toLowerCase().trim()
-
-                        if (!term) {
-                          return channels.map((c) => ({
-                            label: c.name,
-                            value: c.id,
-                          }))
-                        }
-
-                        const filtered = channels
-                          .filter((c) => c.name.toLowerCase().includes(term))
-                          .map((c) => ({ label: c.name, value: c.id }))
-
-                        return filtered
-                      }}
-                      key={channels.length}
-                    />
-                  </FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ''}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="bg-muted border-transparent shadow-none">
+                        <SelectValue placeholder="Select Logs Channel" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {channels.map((channel) => (
+                        <SelectItem key={channel.id} value={channel.id}>
+                          {channel.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormDescription>
-                    Select channel(s) for Admin Manage Channels
+                    Select channel for Admin Manage Channel
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

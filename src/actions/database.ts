@@ -34,7 +34,7 @@ export async function getChannels(
       casinoChannelIds: doc.casinoChannelIds ?? [],
     },
     admin: {
-      adminChannelIds: doc.adminChannelIds ?? [],
+      adminChannelIds: doc.adminChannelIds ?? '',
     },
     prediction: {
       actions: doc.predictionChannelIds?.actions ?? '',
@@ -306,7 +306,7 @@ export async function depositBalance(
     await user.save()
 
     const guildConfig = await GuildConfiguration.findOne({ guildId })
-    const logChannelId = guildConfig?.atmChannelIds.logs
+    const logChannelId = guildConfig?.adminChannelIds
     if (logChannelId) {
       try {
         await sendEmbed(
@@ -349,7 +349,7 @@ export async function withdrawBalance(
     await user.save()
 
     const guildConfig = await GuildConfiguration.findOne({ guildId })
-    const logChannelId = guildConfig?.atmChannelIds.logs
+    const logChannelId = guildConfig?.adminChannelIds
     if (logChannelId) {
       try {
         await sendEmbed(
@@ -387,7 +387,7 @@ export async function resetBalance(
     await user.save()
 
     const guildConfig = await GuildConfiguration.findOne({ guildId })
-    const logChannelId = guildConfig?.atmChannelIds.logs
+    const logChannelId = guildConfig?.adminChannelIds
     if (logChannelId) {
       try {
         await sendEmbed(
