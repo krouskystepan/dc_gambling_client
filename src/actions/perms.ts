@@ -18,10 +18,7 @@ export const getUserPermissions = async (
   let isManager = false
 
   try {
-    const userGuilds = await fetchUserGuilds(
-      session.accessToken,
-      session.userId
-    )
+    const userGuilds = await fetchUserGuilds(session)
 
     const guild = userGuilds.find((g) => g.id === guildId)
     if (guild) {

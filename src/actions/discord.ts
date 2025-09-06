@@ -9,20 +9,56 @@ import GuildConfiguration from '@/models/GuildConfiguration'
 import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v10'
 
-const guildCache = new Map<string, DiscordGuild[]>()
+interface CacheEntry<T> {
+  data: T
+  expiresAt: number
+}
 
-export const fetchUserGuilds = async (token: string, userId: string) => {
-  const cacheKey = `${userId}`
-  if (guildCache.has(cacheKey)) return guildCache.get(cacheKey)!
+const guildCache = new Map<string, CacheEntry<DiscordGuild[]>>()
+
+const GUILD_CACHE_DURATION = 5 * 60_000 // 5 minutes
+
+export const fetchUserGuilds = async (session: Session) => {
+  if (!session.accessToken) return []
+
+  const cacheKey = session.userId!
+  const cached = guildCache.get(cacheKey)
+  const now = Date.now()
+
+  if (cached && cached.expiresAt > now) return cached.data
 
   const { data } = await axios.get<DiscordGuild[]>(
     'https://discord.com/api/v10/users/@me/guilds',
-    { headers: { Authorization: `Bearer ${token}` } }
+    { headers: { Authorization: `Bearer ${session.accessToken}` } }
   )
 
-  guildCache.set(cacheKey, data)
-  setTimeout(() => guildCache.delete(cacheKey), 60_000)
+  guildCache.set(cacheKey, { data, expiresAt: now + GUILD_CACHE_DURATION })
   return data
+}
+
+interface MemberCacheEntry {
+  roles: string[]
+  expiresAt: number
+}
+
+const memberCache = new Map<string, MemberCacheEntry>()
+
+async function fetchMemberRoles(guildId: string, userId: string) {
+  const cacheKey = `${guildId}:${userId}`
+  const cached = memberCache.get(cacheKey)
+  const now = Date.now()
+
+  if (cached && cached.expiresAt > now) {
+    return cached.roles
+  }
+
+  const { data } = await axios.get<{ roles: string[] }>(
+    `https://discord.com/api/v10/guilds/${guildId}/members/${userId}`,
+    { headers: { Authorization: `Bot ${DISCORD_TOKEN}` } }
+  )
+
+  memberCache.set(cacheKey, { roles: data.roles, expiresAt: now + 60_000 })
+  return data.roles
 }
 
 export const getUserGuilds = cache(
@@ -33,10 +69,7 @@ export const getUserGuilds = cache(
 
     await connectToDatabase()
 
-    const userGuilds = await fetchUserGuilds(
-      session.accessToken!,
-      session.userId
-    )
+    const userGuilds = await fetchUserGuilds(session)
 
     const allGuildConfigs = await GuildConfiguration.find({
       managerRoleId: { $exists: true, $ne: '' },
@@ -55,16 +88,8 @@ export const getUserGuilds = cache(
       const dbConfig = allGuildConfigs.find((c) => c.guildId === guild.id)
       if (dbConfig) {
         try {
-          const { data: member } = await axios.get<{ roles: string[] }>(
-            `https://discord.com/api/v10/guilds/${guild.id}/members/${session.userId}`,
-            {
-              headers: {
-                Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-              },
-            }
-          )
-
-          if (member.roles.includes(dbConfig.managerRoleId)) includeGuild = true
+          const roles = await fetchMemberRoles(guild.id, session.userId!)
+          if (roles.includes(dbConfig.managerRoleId)) includeGuild = true
         } catch (err) {
           if (
             axios.isAxiosError(err) &&
