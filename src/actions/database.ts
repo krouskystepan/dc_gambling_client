@@ -238,7 +238,7 @@ export async function registerUser(
     try {
       await sendEmbed(
         logChannelId,
-        'ATM - User Registered',
+        'ATM - User Registered via Web',
         `Manager <@${managerId}> has successfully registered <@${userId}>.`,
         0x95a5a6
       )
@@ -275,7 +275,7 @@ export async function unregisterUser(
     try {
       await sendEmbed(
         logChannelId,
-        'ATM - User Unregistered',
+        'ATM - User Unregistered via Web',
         `Manager <@${managerId}> has successfully unregistered <@${userId}>.`,
         0x23272a
       )
@@ -311,7 +311,7 @@ export async function depositBalance(
       try {
         await sendEmbed(
           logChannelId,
-          'ATM - Deposit',
+          'ATM - Deposit via Web',
           `Manager <@${managerId}> successfully added **$${formatNumberToReadableString(
             amount
           )}** to <@${userId}>.\nTheir new balance is now: **$${formatNumberToReadableString(
@@ -354,7 +354,7 @@ export async function withdrawBalance(
       try {
         await sendEmbed(
           logChannelId,
-          'ATM - Withdraw',
+          'ATM - Withdraw via Web',
           `Manager <@${managerId}> successfully removed **$${formatNumberToReadableString(
             amount
           )}** from <@${userId}>.\nTheir new balance is now: **$${formatNumberToReadableString(
@@ -392,7 +392,7 @@ export async function resetBalance(
       try {
         await sendEmbed(
           logChannelId,
-          'ATM - Reset Balance',
+          'ATM - Reset Balance via Web',
           `Manager <@${managerId}> reset the balance of <@${userId}>.`,
           0x1abc9c
         )
