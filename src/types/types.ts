@@ -45,3 +45,15 @@ export type GuildMemberStatus = {
   avatar: string
   balance?: number
 }
+
+export type VipChannels = {
+  userId: string
+  guildId: string
+  channelId: string
+  channelName: string
+  expiresAt: Date
+  createdAt: Date
+  username: string
+  nickname: string
+  avatar: string
+}

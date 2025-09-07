@@ -3,6 +3,7 @@ import ChannelsForm from '@/components/forms/ChannelsForm'
 import ManagerRoleForm from '@/components/forms/ManagerRoleForm'
 import VipSettingsForm from '@/components/forms/VipSettingsForm'
 import UsersList from '@/components/lists/UsersList'
+// import VipsList from '@/components/lists/VipsList'
 
 interface GuildPageProps {
   params: Promise<{ guildId: string }>
@@ -28,6 +29,7 @@ const GuildPage = async ({ params, searchParams }: GuildPageProps) => {
         return <UsersList guildId={guildId} />
       case 'vips':
         return 'Coming soon...'
+      // return <VipsList guildId={guildId} />
       case 'predictions':
         return 'Coming soon...'
       default:

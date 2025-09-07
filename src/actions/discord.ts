@@ -158,16 +158,41 @@ export const getGuildName = async (guildId: string): Promise<string | null> => {
   }
 }
 
+type CachedGuildChannels = {
+  data: GuildChannel[]
+  expiresAt: number
+}
+
+const guildChannelsCache = new Map<string, CachedGuildChannels>()
+
 export const getGuildChannels = async (
   guildId: string
 ): Promise<GuildChannel[]> => {
+  const now = Date.now()
+  const cached = guildChannelsCache.get(guildId)
+
+  if (cached && cached.expiresAt > now) {
+    return cached.data
+  }
+
   if (!process.env.DISCORD_BOT_TOKEN) throw new Error('Bot token missing')
+
   try {
     const { data } = await axios.get<GuildChannel[]>(
       `https://discord.com/api/v10/guilds/${guildId}/channels`,
-      { headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` } }
+      {
+        headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` },
+      }
     )
-    return data.filter((c) => c.type === 0)
+
+    const textChannels = data.filter((c) => c.type === 0)
+
+    guildChannelsCache.set(guildId, {
+      data: textChannels,
+      expiresAt: now + 60_000, // cache for 1 minute
+    })
+
+    return textChannels
   } catch (err) {
     console.error('Discord API error fetching channels', err)
     return []
@@ -206,7 +231,27 @@ export const getGuildCategories = async (
   }
 }
 
+const guildMembersCache = new Map<
+  string,
+  {
+    data: {
+      userId: string
+      username: string
+      nickname: string | null
+      avatarUrl: string
+    }[]
+    expiresAt: number
+  }
+>()
+
 export const getDiscordGuildMembers = async (guildId: string) => {
+  const now = Date.now()
+  const cached = guildMembersCache.get(guildId)
+
+  if (cached && cached.expiresAt > now) {
+    return cached.data
+  }
+
   try {
     const { data: members } = await axios.get<
       {
@@ -222,7 +267,7 @@ export const getDiscordGuildMembers = async (guildId: string) => {
       headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` },
     })
 
-    return members
+    const mappedMembers = members
       .filter((m) => !m.user.bot)
       .map((m) => ({
         userId: m.user.id,
@@ -232,6 +277,13 @@ export const getDiscordGuildMembers = async (guildId: string) => {
           ? `https://cdn.discordapp.com/avatars/${m.user.id}/${m.user.avatar}.png?size=128`
           : '/default-avatar.png',
       }))
+
+    guildMembersCache.set(guildId, {
+      data: mappedMembers,
+      expiresAt: now + 60_000,
+    })
+
+    return mappedMembers
   } catch (err) {
     console.error(`Failed to fetch Discord members for guild ${guildId}`, err)
     return []

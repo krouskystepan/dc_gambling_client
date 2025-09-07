@@ -8,13 +8,15 @@ import {
   CasinoSettingsValues,
   VipSettingsValues,
   GuildMemberStatus,
+  VipChannels,
 } from '@/types/types'
 import { getServerSession, Session } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import { getUserPermissions } from './perms'
-import { getDiscordGuildMembers, sendEmbed } from './discord'
+import { getDiscordGuildMembers, getGuildChannels, sendEmbed } from './discord'
 import User from '@/models/User'
 import { revalidatePath } from 'next/cache'
+import VipRoom from '@/models/VipRoom'
 
 // Admin Only
 export async function getChannels(
@@ -188,6 +190,7 @@ export async function saveVipSettings(
   }
 }
 
+// Manager and Admin
 export async function getUserWithRegistrationStatus(
   guildId: string,
   session: Session | null
@@ -200,15 +203,22 @@ export async function getUserWithRegistrationStatus(
   const dbUsersMap = new Map(dbUsers.map((u) => [u.userId, u]))
 
   const discordMembers = await getDiscordGuildMembers(guildId)
+  const discordMembersMap = new Map(discordMembers.map((m) => [m.userId, m]))
 
-  return discordMembers.map((m) => {
-    const dbUser = dbUsersMap.get(m.userId)
+  const allUserIds = new Set<string>([
+    ...dbUsers.map((u) => u.userId),
+    ...discordMembers.map((m) => m.userId),
+  ])
+
+  return Array.from(allUserIds).map((userId) => {
+    const dbUser = dbUsersMap.get(userId)
+    const discordMember = discordMembersMap.get(userId)
 
     return {
-      userId: m.userId,
-      username: m.username,
-      nickname: m.nickname,
-      avatar: m.avatarUrl,
+      userId,
+      username: discordMember?.username || 'Unknown',
+      nickname: discordMember?.nickname || null,
+      avatar: discordMember?.avatarUrl || '/default-avatar.png',
       registered: !!dbUser,
       registeredAt: dbUser?.createdAt || null,
       balance: dbUser?.balance || 0,
@@ -216,7 +226,6 @@ export async function getUserWithRegistrationStatus(
   })
 }
 
-// Manager and Admin
 export async function registerUser(
   userId: string,
   guildId: string,
@@ -406,4 +415,39 @@ export async function resetBalance(
     console.error('Error resetting balance:', err)
     return { success: false, message: 'Server error, please try again.' }
   }
+}
+
+export async function getVips(
+  guildId: string,
+  session: Session
+): Promise<VipChannels[]> {
+  if (!session || !session.accessToken) return []
+
+  await connectToDatabase()
+
+  const docs = await VipRoom.find({ guildId })
+  if (!docs.length) return []
+
+  const discordMembers = await getDiscordGuildMembers(guildId)
+  const membersMap = new Map(discordMembers.map((m) => [m.userId, m]))
+
+  const guildChannels = await getGuildChannels(guildId)
+  const channelsMap = new Map(guildChannels.map((c) => [c.id, c.name]))
+
+  return docs.map((vip) => {
+    const member = membersMap.get(vip.userId)
+    const channelName = channelsMap.get(vip.channelId) || 'Unknown'
+
+    return {
+      userId: vip.userId,
+      guildId: vip.guildId,
+      channelId: vip.channelId,
+      channelName,
+      expiresAt: vip.expiresAt,
+      createdAt: vip.createdAt,
+      username: member?.username || 'Unknown',
+      nickname: member?.nickname || '',
+      avatar: member?.avatarUrl || '/default-avatar.png',
+    }
+  })
 }
