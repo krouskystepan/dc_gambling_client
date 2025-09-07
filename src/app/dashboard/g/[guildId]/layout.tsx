@@ -3,6 +3,7 @@ import { getUserPermissions } from '@/actions/perms'
 import GuildConfigSidebar from '@/components/GuildConfigSidebar'
 import BotNotInGuild from '@/components/states/BotNotInGuild'
 import NoPerms from '@/components/states/NoPerms'
+import RateLimited from '@/components/states/RateLimmited'
 import { authOptions } from '@/lib/authOptions'
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
@@ -24,7 +25,12 @@ const GuildConfLayout = async ({ children, params }: GuildConfLayoutProps) => {
   const guildName = await getGuildName(guildId)
   if (!guildName) return <BotNotInGuild />
 
-  const { isAdmin, isManager } = await getUserPermissions(guildId, session)
+  const { isAdmin, isManager, rateLimited } = await getUserPermissions(
+    guildId,
+    session
+  )
+
+  if (rateLimited) return <RateLimited />
 
   if (!isAdmin && !isManager) return <NoPerms />
 

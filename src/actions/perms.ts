@@ -9,7 +9,7 @@ import { fetchUserGuilds } from './discord'
 export const getUserPermissions = async (
   guildId: string,
   session: Session | null
-): Promise<{ isAdmin: boolean; isManager: boolean }> => {
+): Promise<{ isAdmin: boolean; isManager: boolean; rateLimited?: boolean }> => {
   if (!session || !session.accessToken || !session.userId) {
     return { isAdmin: false, isManager: false }
   }
@@ -43,7 +43,9 @@ export const getUserPermissions = async (
           isManager = true
         }
       } catch (err) {
-        console.error(`Failed to fetch member roles for guild ${guildId}`, err)
+        if (axios.isAxiosError(err) && err.response?.status === 429) {
+          return { isAdmin, isManager, rateLimited: true }
+        }
       }
     }
   } catch (err) {

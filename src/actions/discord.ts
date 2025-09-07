@@ -16,9 +16,11 @@ interface CacheEntry<T> {
 
 const guildCache = new Map<string, CacheEntry<DiscordGuild[]>>()
 
-const GUILD_CACHE_DURATION = 5 * 60_000 // 5 minutes
+const GUILD_CACHE_DURATION = 5 * 60_000
 
-export const fetchUserGuilds = async (session: Session) => {
+export const fetchUserGuilds = async (
+  session: Session
+): Promise<DiscordGuild[]> => {
   if (!session.accessToken) return []
 
   const cacheKey = session.userId!
@@ -27,13 +29,22 @@ export const fetchUserGuilds = async (session: Session) => {
 
   if (cached && cached.expiresAt > now) return cached.data
 
-  const { data } = await axios.get<DiscordGuild[]>(
-    'https://discord.com/api/v10/users/@me/guilds',
-    { headers: { Authorization: `Bearer ${session.accessToken}` } }
-  )
+  try {
+    const { data } = await axios.get<DiscordGuild[]>(
+      'https://discord.com/api/v10/users/@me/guilds',
+      { headers: { Authorization: `Bearer ${session.accessToken}` } }
+    )
 
-  guildCache.set(cacheKey, { data, expiresAt: now + GUILD_CACHE_DURATION })
-  return data
+    guildCache.set(cacheKey, { data, expiresAt: now + GUILD_CACHE_DURATION })
+    return data
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 429) {
+      console.warn('Discord API rate limit hit when fetching user guilds')
+      return []
+    }
+
+    throw err
+  }
 }
 
 interface MemberCacheEntry {
