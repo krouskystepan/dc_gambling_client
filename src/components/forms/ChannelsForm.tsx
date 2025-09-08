@@ -20,9 +20,9 @@ import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
 import {
   atmChannelsFormSchema,
-  adminChannelsFormSchema,
   predictionChannelsFormSchema,
   casinoChannelsFormSchema,
+  transactionsChannelsFormSchema,
 } from '@/types/schemas'
 import { getChannels, saveChannels } from '@/actions/database'
 import {
@@ -37,7 +37,7 @@ import MultipleSelector from '../ui/multiselect'
 const channelsFormSchema = z.object({
   atm: atmChannelsFormSchema,
   casino: casinoChannelsFormSchema,
-  admin: adminChannelsFormSchema,
+  transactions: transactionsChannelsFormSchema,
   prediction: predictionChannelsFormSchema,
 })
 
@@ -49,7 +49,7 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
     defaultValues: {
       atm: { actions: '', logs: '' },
       casino: { casinoChannelIds: [] },
-      admin: { adminChannelIds: '' },
+      transactions: { transacitonsChannelIds: '' },
       prediction: { actions: '', logs: '' },
     },
   })
@@ -74,8 +74,9 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
         casino: {
           casinoChannelIds: channels?.casino?.casinoChannelIds || [],
         },
-        admin: {
-          adminChannelIds: channels?.admin?.adminChannelIds || '',
+        transactions: {
+          transacitonsChannelIds:
+            channels?.transactions?.transacitonsChannelIds || '',
         },
         prediction: {
           actions: channels?.prediction?.actions || '',
@@ -247,10 +248,10 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
             </h4>
             <FormField
               control={form.control}
-              name="admin.adminChannelIds"
+              name="transactions.transacitonsChannelIds"
               render={({ field }) => (
                 <FormItem>
-                  <Label>Admin Channels</Label>
+                  <Label>Transaction Channel</Label>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value ?? ''}
@@ -269,7 +270,7 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Select channel for Admin Manage Channel
+                    Select channel for Transactions
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
