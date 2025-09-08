@@ -36,7 +36,7 @@ export async function getChannels(
       casinoChannelIds: doc.casinoChannelIds ?? [],
     },
     transactions: {
-      transacitonsChannelIds: doc.transacitonsChannelIds ?? '',
+      transactionChannelId: doc.transactionChannelId ?? '',
     },
     prediction: {
       actions: doc.predictionChannelIds?.actions ?? '',
@@ -61,7 +61,7 @@ export async function saveChannels(
       $set: {
         'atmChannelIds.actions': values.atm.actions,
         'atmChannelIds.logs': values.atm.logs,
-        transacitonsChannelIds: values.transactions.transacitonsChannelIds,
+        transactionChannelId: values.transactions.transactionChannelId,
         casinoChannelIds: values.casino.casinoChannelIds,
         'predictionChannelIds.actions': values.prediction.actions,
         'predictionChannelIds.logs': values.prediction.logs,
@@ -79,7 +79,7 @@ export async function saveChannels(
       casinoChannelIds: updated.casinoChannelIds,
     },
     transactions: {
-      transacitonsChannelIds: updated.transacitonsChannelIds,
+      transactionChannelId: updated.transactionChannelId,
     },
     prediction: {
       actions: updated.predictionChannelIds.actions,
@@ -315,7 +315,7 @@ export async function depositBalance(
     await user.save()
 
     const guildConfig = await GuildConfiguration.findOne({ guildId })
-    const logChannelId = guildConfig?.transacitonsChannelIds
+    const logChannelId = guildConfig?.transactionChannelId
     if (logChannelId) {
       try {
         await sendEmbed(
@@ -358,7 +358,7 @@ export async function withdrawBalance(
     await user.save()
 
     const guildConfig = await GuildConfiguration.findOne({ guildId })
-    const logChannelId = guildConfig?.transacitonsChannelIds
+    const logChannelId = guildConfig?.transactionChannelId
     if (logChannelId) {
       try {
         await sendEmbed(
@@ -396,7 +396,7 @@ export async function resetBalance(
     await user.save()
 
     const guildConfig = await GuildConfiguration.findOne({ guildId })
-    const logChannelId = guildConfig?.transacitonsChannelIds
+    const logChannelId = guildConfig?.transactionChannelId
     if (logChannelId) {
       try {
         await sendEmbed(

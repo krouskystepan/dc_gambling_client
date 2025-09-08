@@ -49,7 +49,7 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
     defaultValues: {
       atm: { actions: '', logs: '' },
       casino: { casinoChannelIds: [] },
-      transactions: { transacitonsChannelIds: '' },
+      transactions: { transactionChannelId: '' },
       prediction: { actions: '', logs: '' },
     },
   })
@@ -75,8 +75,8 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
           casinoChannelIds: channels?.casino?.casinoChannelIds || [],
         },
         transactions: {
-          transacitonsChannelIds:
-            channels?.transactions?.transacitonsChannelIds || '',
+          transactionChannelId:
+            channels?.transactions?.transactionChannelId || '',
         },
         prediction: {
           actions: channels?.prediction?.actions || '',
@@ -244,11 +244,11 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
 
           <section className="flex flex-col gap-4">
             <h4 className="text-xl font-semibold text-yellow-400">
-              Admin Channels
+              Transaction Channel
             </h4>
             <FormField
               control={form.control}
-              name="transactions.transacitonsChannelIds"
+              name="transactions.transactionChannelId"
               render={({ field }) => (
                 <FormItem>
                   <Label>Transaction Channel</Label>

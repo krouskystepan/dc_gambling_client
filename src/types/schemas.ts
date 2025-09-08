@@ -14,7 +14,7 @@ export const casinoChannelsFormSchema = z.object({
 })
 
 export const transactionsChannelsFormSchema = z.object({
-  transacitonsChannelIds: z.string().min(1, { message: NO_CHANNEL }),
+  transactionChannelId: z.string().min(1, { message: NO_CHANNEL }),
 })
 
 export const predictionChannelsFormSchema = z.object({
