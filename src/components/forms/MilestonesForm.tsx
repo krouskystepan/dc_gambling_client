@@ -67,75 +67,77 @@ const MilestonesForm = ({ guildId }: { guildId: string }) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4 w-md"
+          className="flex flex-col gap-4 w-3/4"
         >
           <h4 className="text-xl font-semibold text-yellow-400">Milestones</h4>
 
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex gap-3 w-full">
-              <FormField
-                control={form.control}
-                name={`milestones.${index}.threshold`}
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <Label>Threshold</Label>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        value={field.value ?? ''}
-                        onChange={(e) =>
-                          field.onChange(
-                            Number(e.target.value.replace(/\D/g, ''))
-                          )
-                        }
-                        className="bg-muted border-transparent shadow-none"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <div className="grid grid-cols-3 gap-4 w-full">
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex gap-3 w-full">
+                <FormField
+                  control={form.control}
+                  name={`milestones.${index}.threshold`}
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <Label>Threshold</Label>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          value={field.value ?? ''}
+                          onChange={(e) =>
+                            field.onChange(
+                              Number(e.target.value.replace(/\D/g, ''))
+                            )
+                          }
+                          className="bg-muted border-transparent shadow-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name={`milestones.${index}.reward`}
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <Label>Reward</Label>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        value={field.value ?? ''}
-                        onChange={(e) =>
-                          field.onChange(
-                            Number(e.target.value.replace(/\D/g, ''))
-                          )
-                        }
-                        className="bg-muted border-transparent shadow-none"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name={`milestones.${index}.reward`}
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <Label>Reward</Label>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          value={field.value ?? ''}
+                          onChange={(e) =>
+                            field.onChange(
+                              Number(e.target.value.replace(/\D/g, ''))
+                            )
+                          }
+                          className="bg-muted border-transparent shadow-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="flex justify-end items-end">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => remove(index)}
-                >
-                  <X />
-                </Button>
+                <div className="flex justify-end items-end">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => remove(index)}
+                  >
+                    <X />
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           <Button
             type="button"
             variant="secondary"
-            className="px-3 py-1 rounded"
+            className="px-3 py-1 rounded max-w-sm"
             onClick={() => append({ threshold: 0, reward: 0 })}
           >
             ➕ Add Milestone
