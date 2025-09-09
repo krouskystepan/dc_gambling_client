@@ -9,6 +9,7 @@ import {
   VipSettingsValues,
   GuildMemberStatus,
   VipChannels,
+  MilestoneItem,
 } from '@/types/types'
 import { getServerSession, Session } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
@@ -17,6 +18,7 @@ import { getDiscordGuildMembers, getGuildChannels, sendEmbed } from './discord'
 import User from '@/models/User'
 import { revalidatePath } from 'next/cache'
 import VipRoom from '@/models/VipRoom'
+import Milestones from '@/models/Milestones'
 
 // Admin Only
 export async function getChannels(
@@ -187,6 +189,50 @@ export async function saveVipSettings(
     categoryId: updatedDoc.vipSettings?.categoryId ?? '',
     pricePerDay: updatedDoc.vipSettings?.pricePerDay ?? 0,
     pricePerCreate: updatedDoc.vipSettings?.pricePerCreate ?? 0,
+  }
+}
+
+export async function getMilestones(
+  guildId: string
+): Promise<{ milestones: MilestoneItem[] } | null> {
+  await connectToDatabase()
+
+  const doc = await Milestones.findOne({ guildId })
+  if (!doc) return null
+
+  return {
+    milestones: doc.milestones
+      .map((m: MilestoneItem) => ({
+        threshold: m.threshold ?? 0,
+        reward: m.reward ?? 0,
+      }))
+      .sort((a: MilestoneItem, b: MilestoneItem) => b.threshold - a.threshold), // ✅ typováno
+  }
+}
+
+export async function saveMilestones(
+  guildId: string,
+  milestones: MilestoneItem[]
+) {
+  const session = await getServerSession(authOptions)
+  const { isAdmin } = await getUserPermissions(guildId, session)
+  if (!isAdmin) throw new Error('Insufficient permissions: Admin only')
+
+  await connectToDatabase()
+
+  const updatedDoc = await Milestones.findOneAndUpdate(
+    { guildId },
+    { $set: { milestones } },
+    { new: true, upsert: true }
+  )
+
+  if (!updatedDoc) return null
+
+  return {
+    milestones: updatedDoc.milestones.map((m: MilestoneItem) => ({
+      threshold: m.threshold ?? 0,
+      reward: m.reward ?? 0,
+    })),
   }
 }
 

@@ -29,6 +29,15 @@ export const channelsFormSchema = z.object({
   prediction: predictionChannelsFormSchema,
 })
 
+export const milestoneFormSchema = z.object({
+  milestones: z.array(
+    z.object({
+      threshold: z.number().min(0),
+      reward: z.number().min(0),
+    })
+  ),
+})
+
 const positiveNumberString = z
   .string()
   .regex(/^\d*\.?\d*$/, 'Must be a valid number')
