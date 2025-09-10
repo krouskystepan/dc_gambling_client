@@ -77,6 +77,28 @@ const NestedFields = ({
                           name={field.name}
                           ref={field.ref}
                         />
+                        <Button
+                          type="reset"
+                          variant="ghost"
+                          className="bg-muted text-destructive/60 inline-flex w-9 items-center justify-center rounded-none rounded-e-md text-sm outline-none focus:z-10 hover:text-destructive duration-200 transition-colors cursor-pointer"
+                          onClick={() => {
+                            const defaultGameSettings = defaultCasinoSettings[
+                              game as keyof CasinoSettingsValues
+                            ] as Record<string, number>
+
+                            const nestedDefault = defaultGameSettings[nestedKey]
+
+                            if (
+                              typeof nestedDefault === 'object' &&
+                              nestedDefault !== null
+                            ) {
+                              const defaultValue = nestedDefault[symbol]
+                              field.onChange(String(defaultValue))
+                            }
+                          }}
+                        >
+                          <RotateCw size={16} aria-hidden="true" />
+                        </Button>
                       </div>
                     </FormControl>
                     <FormMessage />
