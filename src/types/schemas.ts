@@ -30,12 +30,10 @@ export const channelsFormSchema = z.object({
 })
 
 export const milestoneFormSchema = z.object({
-  milestones: z.array(
-    z.object({
-      threshold: z.number().min(0),
-      reward: z.number().min(0),
-    })
-  ),
+  baseThreshold: z.number().min(0),
+  baseReward: z.number().min(0),
+  multiplierThreshold: z.number().min(1),
+  multiplierReward: z.number().min(1),
 })
 
 const positiveNumberString = z

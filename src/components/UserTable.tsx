@@ -108,7 +108,7 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
       accessorKey: 'avatar',
       enableSorting: false,
       enableColumnFilter: false,
-      size: 60,
+      size: 45,
       cell: ({ row }) => (
         <Image
           className="ml-2 rounded-full"
@@ -122,7 +122,7 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
     {
       header: 'Username',
       accessorKey: 'username',
-      size: 160,
+      size: 120,
       filterFn: multiColumnFilter,
       cell: ({ row }) => (
         <p>
@@ -137,23 +137,44 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
     {
       header: 'Nickname',
       accessorKey: 'nickname',
-      size: 180,
+      size: 140,
       filterFn: multiColumnFilter,
       cell: ({ row }) => row.getValue('nickname'),
     },
     {
       header: 'Balance',
       accessorKey: 'balance',
-      size: 80,
+      size: 70,
       cell: ({ row }) =>
         row.original.registered
           ? formatNumberToReadableString(row.getValue('balance'))
           : '-',
     },
     {
+      header: 'Profit/Loss',
+      accessorKey: 'profitLoss',
+      size: 70,
+      cell: ({ row }) => {
+        if (!row.original.registered) return '-'
+
+        const profitLoss = row.getValue('profitLoss') as number
+
+        return (
+          <span
+            className={cn(
+              'font-medium',
+              profitLoss >= 0 ? 'text-green-500' : 'text-red-500'
+            )}
+          >
+            {formatNumberToReadableString(profitLoss)}
+          </span>
+        )
+      },
+    },
+    {
       header: 'Registered At',
       accessorKey: 'registeredAt',
-      size: 100,
+      size: 90,
       enableSorting: false,
       enableColumnFilter: false,
       cell: ({ row }) => {

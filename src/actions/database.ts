@@ -9,7 +9,7 @@ import {
   VipSettingsValues,
   GuildMemberStatus,
   VipChannels,
-  MilestoneItem,
+  MilestoneValues,
 } from '@/types/types'
 import { getServerSession, Session } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
@@ -194,26 +194,21 @@ export async function saveVipSettings(
 
 export async function getMilestones(
   guildId: string
-): Promise<{ milestones: MilestoneItem[] } | null> {
+): Promise<MilestoneValues | null> {
   await connectToDatabase()
 
   const doc = await Milestones.findOne({ guildId })
   if (!doc) return null
 
   return {
-    milestones: doc.milestones
-      .map((m: MilestoneItem) => ({
-        threshold: m.threshold ?? 0,
-        reward: m.reward ?? 0,
-      }))
-      .sort((a: MilestoneItem, b: MilestoneItem) => b.threshold - a.threshold), // ✅ typováno
+    baseThreshold: doc.baseThreshold ?? 0,
+    baseReward: doc.baseReward ?? 0,
+    multiplierThreshold: doc.multiplierThreshold ?? 1,
+    multiplierReward: doc.multiplierReward ?? 1,
   }
 }
 
-export async function saveMilestones(
-  guildId: string,
-  milestones: MilestoneItem[]
-) {
+export async function saveMilestones(guildId: string, values: MilestoneValues) {
   const session = await getServerSession(authOptions)
   const { isAdmin } = await getUserPermissions(guildId, session)
   if (!isAdmin) throw new Error('Insufficient permissions: Admin only')
@@ -222,17 +217,24 @@ export async function saveMilestones(
 
   const updatedDoc = await Milestones.findOneAndUpdate(
     { guildId },
-    { $set: { milestones } },
+    {
+      $set: {
+        baseThreshold: values.baseThreshold,
+        baseReward: values.baseReward,
+        multiplierThreshold: values.multiplierThreshold,
+        multiplierReward: values.multiplierReward,
+      },
+    },
     { new: true, upsert: true }
   )
 
   if (!updatedDoc) return null
 
   return {
-    milestones: updatedDoc.milestones.map((m: MilestoneItem) => ({
-      threshold: m.threshold ?? 0,
-      reward: m.reward ?? 0,
-    })),
+    baseThreshold: updatedDoc.baseThreshold ?? 0,
+    baseReward: updatedDoc.baseReward ?? 0,
+    multiplierThreshold: updatedDoc.multiplierThreshold ?? 1,
+    multiplierReward: updatedDoc.multiplierReward ?? 1,
   }
 }
 
@@ -260,6 +262,8 @@ export async function getUserWithRegistrationStatus(
     const dbUser = dbUsersMap.get(userId)
     const discordMember = discordMembersMap.get(userId)
 
+    const profitLoss = (dbUser?.balance || 0) - (dbUser?.amountGambled || 0)
+
     return {
       userId,
       username: discordMember?.username || 'Unknown',
@@ -268,6 +272,7 @@ export async function getUserWithRegistrationStatus(
       registered: !!dbUser,
       registeredAt: dbUser?.createdAt || null,
       balance: dbUser?.balance || 0,
+      profitLoss: profitLoss,
     }
   })
 }

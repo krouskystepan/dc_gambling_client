@@ -36,7 +36,7 @@ export type ChannelsFormValues = z.infer<typeof channelsFormSchema>
 export type CasinoSettingsValues = z.infer<typeof casinoSettingsSchema>
 export type ManagerRoleValues = z.infer<typeof managerRoleFormSchema>
 export type VipSettingsValues = z.infer<typeof vipSettingsFormSchema>
-export type MilestoneFormValues = z.infer<typeof milestoneFormSchema>
+export type MilestoneValues = z.infer<typeof milestoneFormSchema>
 
 export type GuildMemberStatus = {
   userId: string
@@ -46,6 +46,7 @@ export type GuildMemberStatus = {
   registeredAt: string | null
   avatar: string
   balance?: number
+  profitLoss?: number
 }
 
 export type VipChannels = {
@@ -58,9 +59,4 @@ export type VipChannels = {
   username: string
   nickname: string
   avatar: string
-}
-
-export type MilestoneItem = {
-  threshold: number
-  reward: number
 }

@@ -2,20 +2,21 @@ import { Schema, model, Document, models } from 'mongoose'
 
 export type Milestones = Document & {
   guildId: string
-  milestones: { threshold: number; reward: number }[]
+  baseThreshold: number
+  baseReward: number
+  multiplierThreshold: number
+  multiplierReward: number
   createdAt: Date
   updatedAt: Date
 }
 
 const MilestonesSchema = new Schema<Milestones>(
   {
-    guildId: { type: String, required: true, unique: true }, // unique tady stačí
-    milestones: [
-      {
-        threshold: { type: Number, required: true },
-        reward: { type: Number, required: true },
-      },
-    ],
+    guildId: { type: String, required: true, unique: true },
+    baseThreshold: { type: Number, required: true, default: 10_000 },
+    baseReward: { type: Number, required: true, default: 500 },
+    multiplierThreshold: { type: Number, required: true, default: 1.5 },
+    multiplierReward: { type: Number, required: true, default: 1.5 },
   },
   { timestamps: true }
 )
