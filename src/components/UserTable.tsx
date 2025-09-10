@@ -152,21 +152,25 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
     },
     {
       header: 'Profit/Loss',
-      accessorKey: 'profitLoss',
+      accessorKey: 'netProfit',
       size: 70,
       cell: ({ row }) => {
         if (!row.original.registered) return '-'
 
-        const profitLoss = row.getValue('profitLoss') as number
+        const netProfit = row.getValue('netProfit') as number
+
+        let netClass = ''
+        if (netProfit > 0) {
+          netClass = 'text-green-500'
+        } else if (netProfit < 0) {
+          netClass = 'text-red-500'
+        } else {
+          netClass = 'text-white'
+        }
 
         return (
-          <span
-            className={cn(
-              'font-medium',
-              profitLoss >= 0 ? 'text-green-500' : 'text-red-500'
-            )}
-          >
-            {formatNumberToReadableString(profitLoss)}
+          <span className={cn('font-medium', netClass)}>
+            {formatNumberToReadableString(netProfit)}
           </span>
         )
       },

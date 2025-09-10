@@ -262,8 +262,6 @@ export async function getUserWithRegistrationStatus(
     const dbUser = dbUsersMap.get(userId)
     const discordMember = discordMembersMap.get(userId)
 
-    const profitLoss = (dbUser?.balance || 0) - (dbUser?.amountGambled || 0)
-
     return {
       userId,
       username: discordMember?.username || 'Unknown',
@@ -272,7 +270,7 @@ export async function getUserWithRegistrationStatus(
       registered: !!dbUser,
       registeredAt: dbUser?.createdAt || null,
       balance: dbUser?.balance || 0,
-      profitLoss: profitLoss,
+      netProfit: dbUser?.netProfit || 0,
     }
   })
 }

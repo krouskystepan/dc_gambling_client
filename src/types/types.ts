@@ -46,7 +46,7 @@ export type GuildMemberStatus = {
   registeredAt: string | null
   avatar: string
   balance?: number
-  profitLoss?: number
+  netProfit?: number
 }
 
 export type VipChannels = {
