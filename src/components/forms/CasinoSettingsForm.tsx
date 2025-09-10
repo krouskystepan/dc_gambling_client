@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm, FormProvider, Path } from 'react-hook-form'
+import { useForm, FormProvider, Path, UseFormReturn } from 'react-hook-form'
 import { useEffect, useState } from 'react'
 import { Form, FormField, FormItem, FormControl, FormMessage } from '../ui/form'
 import { Label } from '../ui/label'
@@ -20,42 +20,9 @@ import { calculateRTP } from '@/lib/utils'
 import { RotateCw, TriangleAlert } from 'lucide-react'
 import { Button } from '../ui/button'
 import { CasinoSettingsValues } from '@/types/types'
-
-type DeepNumberToString<T> = T extends number
-  ? string
-  : T extends Array<infer U>
-  ? DeepNumberToString<U>[]
-  : T extends object
-  ? { [K in keyof T]: DeepNumberToString<T[K]> }
-  : T
-
-function numbersToStrings<T>(obj: T): DeepNumberToString<T> {
-  if (typeof obj === 'number') {
-    return obj.toString() as DeepNumberToString<T>
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(numbersToStrings) as DeepNumberToString<T>
-  }
-
-  if (obj !== null && typeof obj === 'object') {
-    const result: Partial<{ [K in keyof T]: DeepNumberToString<T[K]> }> = {}
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        result[key] = numbersToStrings(obj[key])
-      }
-    }
-    return result as DeepNumberToString<T>
-  }
-
-  return obj as DeepNumberToString<T>
-}
+import z from 'zod'
 
 type NestedGameKeys = 'winMultipliers' | 'symbolWeights'
-
-interface NestedRecord {
-  [key: string]: number
-}
 
 const NestedFields = ({
   game,
@@ -63,17 +30,25 @@ const NestedFields = ({
   nestedKeys,
   form,
 }: {
-  game: keyof CasinoSettingsValues
+  game: keyof Pick<CasinoSettingsValues, 'slots' | 'lottery'>
   settings: Record<string, unknown>
   nestedKeys: NestedGameKeys[]
-  form: ReturnType<typeof useForm<CasinoSettingsValues>>
+
+  form: UseFormReturn<
+    z.input<typeof casinoSettingsSchema>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    z.output<typeof casinoSettingsSchema>
+  >
 }) => {
   return (
-    <div className={`grid grid-cols-1 gap-3`}>
+    <div className="grid grid-cols-1 gap-3">
       {nestedKeys.map((nestedKey) => {
-        const nestedObj = settings[nestedKey] as NestedRecord
+        if (!(nestedKey in settings)) return null
+        const nestedObj = settings[nestedKey] as Record<string, number>
+
         return (
-          <div key={nestedKey} className={`grid grid-cols-5 gap-3 mt-2`}>
+          <div key={nestedKey} className="grid grid-cols-5 gap-3 mt-2">
             {Object.entries(nestedObj).map(([symbol]) => (
               <FormField
                 key={symbol}
@@ -93,7 +68,7 @@ const NestedFields = ({
                         <Input
                           className="bg-muted rounded-r-none border-transparent shadow-none"
                           type="text"
-                          value={field.value.toString()}
+                          value={(field.value as string) ?? ''}
                           onChange={(e) => {
                             const val = e.target.value.replace(/[^0-9.]/g, '')
                             field.onChange(val)
@@ -102,24 +77,6 @@ const NestedFields = ({
                           name={field.name}
                           ref={field.ref}
                         />
-                        <Button
-                          type="reset"
-                          variant="ghost"
-                          className="bg-muted text-destructive/60 inline-flex w-9 items-center justify-center rounded-none rounded-e-md text-sm outline-none focus:z-10 hover:text-destructive duration-200 transition-colors cursor-pointer"
-                          onClick={() => {
-                            const gameDefaults = defaultCasinoSettings[
-                              game as keyof CasinoSettingsValues
-                            ] as unknown
-
-                            const defaultValue = (
-                              gameDefaults as Record<string, NestedRecord>
-                            )[nestedKey][symbol]
-
-                            field.onChange(defaultValue.toString())
-                          }}
-                        >
-                          <RotateCw size={16} aria-hidden="true" />
-                        </Button>
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -135,12 +92,17 @@ const NestedFields = ({
 }
 
 const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
-  const form = useForm<CasinoSettingsValues>({
+  const form = useForm<
+    z.input<typeof casinoSettingsSchema>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    z.output<typeof casinoSettingsSchema>
+  >({
     resolver: zodResolver(casinoSettingsSchema),
-    defaultValues: numbersToStrings(defaultCasinoSettings),
+    defaultValues: defaultCasinoSettings,
   })
 
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const watchedValues = form.watch()
 
@@ -149,7 +111,7 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
       try {
         const settings = await getCasinoSettings(guildId)
         if (settings) {
-          form.reset(numbersToStrings(settings))
+          form.reset(settings)
         }
       } catch (err) {
         console.error(err)
@@ -183,7 +145,7 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
           {Object.entries(watchedValues).map(([game, settings]) => {
             const rtp = calculateRTP(
               game as keyof CasinoSettingsValues,
-              settings
+              settings as CasinoSettingsValues[keyof CasinoSettingsValues]
             )
 
             return (
@@ -269,7 +231,7 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
 
                 {game === 'slots' && (
                   <NestedFields
-                    game={game as keyof CasinoSettingsValues}
+                    game="slots"
                     settings={settings as Record<string, unknown>}
                     nestedKeys={['winMultipliers', 'symbolWeights']}
                     form={form}
@@ -278,8 +240,8 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
 
                 {game === 'lottery' && (
                   <NestedFields
-                    game={game as keyof CasinoSettingsValues}
-                    settings={settings as Record<string, unknown>}
+                    game="lottery"
+                    settings={watchedValues.lottery}
                     nestedKeys={['winMultipliers']}
                     form={form}
                   />

@@ -36,51 +36,48 @@ export const milestoneFormSchema = z.object({
   multiplierReward: z.number().min(1),
 })
 
-const positiveNumberString = z
-  .string()
-  .regex(/^\d*\.?\d*$/, 'Must be a valid number')
-  .refine((val) => val === '' || Number(val) >= 0, 'Must be >= 0')
+const numberField = z.coerce.number()
 
 export const casinoSettingsSchema = z.object({
   dice: z.object({
-    winMultiplier: positiveNumberString,
-    minBet: positiveNumberString,
-    maxBet: positiveNumberString,
+    winMultiplier: numberField,
+    minBet: numberField,
+    maxBet: numberField,
   }),
   coinflip: z.object({
-    winMultiplier: positiveNumberString,
-    minBet: positiveNumberString,
-    maxBet: positiveNumberString,
+    winMultiplier: numberField,
+    minBet: numberField,
+    maxBet: numberField,
   }),
   slots: z.object({
-    winMultipliers: z.record(z.string(), positiveNumberString),
-    symbolWeights: z.record(z.string(), positiveNumberString),
-    minBet: positiveNumberString,
-    maxBet: positiveNumberString,
+    winMultipliers: z.record(z.string(), numberField),
+    symbolWeights: z.record(z.string(), numberField),
+    minBet: numberField,
+    maxBet: numberField,
   }),
   lottery: z.object({
-    winMultipliers: z.record(z.string(), positiveNumberString),
-    minBet: positiveNumberString,
-    maxBet: positiveNumberString,
+    winMultipliers: z.record(z.string(), numberField),
+    minBet: numberField,
+    maxBet: numberField,
   }),
   rps: z.object({
-    casinoCut: positiveNumberString,
-    minBet: positiveNumberString,
-    maxBet: positiveNumberString,
+    casinoCut: numberField,
+    minBet: numberField,
+    maxBet: numberField,
   }),
   goldenJackpot: z.object({
-    winMultiplier: positiveNumberString,
-    oneInChance: positiveNumberString,
-    minBet: positiveNumberString,
-    maxBet: positiveNumberString,
+    winMultiplier: numberField,
+    oneInChance: numberField,
+    minBet: numberField,
+    maxBet: numberField,
   }),
   blackjack: z.object({
-    minBet: positiveNumberString,
-    maxBet: positiveNumberString,
+    minBet: numberField,
+    maxBet: numberField,
   }),
   prediction: z.object({
-    minBet: positiveNumberString,
-    maxBet: positiveNumberString,
+    minBet: numberField,
+    maxBet: numberField,
   }),
 })
 
