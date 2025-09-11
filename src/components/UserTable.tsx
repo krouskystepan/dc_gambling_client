@@ -28,6 +28,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -152,7 +153,7 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
       size: 70,
       cell: ({ row }) =>
         row.original.registered
-          ? formatNumberToReadableString(row.getValue('balance'))
+          ? `${formatNumberToReadableString(row.getValue('balance'))}`
           : '-',
     },
     {
@@ -175,7 +176,7 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
 
         return (
           <span className={cn('font-medium', netClass)}>
-            {formatNumberToReadableString(netProfit)}
+            ${formatNumberToReadableString(netProfit)}
           </span>
         )
       },
@@ -237,6 +238,17 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
+
+  const totalBalance = data
+    .filter((u) => u.registered)
+    .reduce((acc, u) => acc + (u.balance || 0), 0)
+
+  const totalNetProfit = data
+    .filter((u) => u.registered)
+    .reduce((acc, u) => acc + (u.netProfit || 0), 0)
+
+  const totalBalanceStr = `$${formatNumberToReadableString(totalBalance)}`
+  const totalProfitStr = `$${formatNumberToReadableString(totalNetProfit)}`
 
   return (
     <div className="space-y-4 w-5xl">
@@ -312,6 +324,35 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
               </TableRow>
             )}
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={3} className="font-medium">
+                Overall Stats
+              </TableCell>
+              <TableCell className="text-left font-medium">
+                {totalBalanceStr}
+              </TableCell>
+              <TableCell
+                className={cn(
+                  'text-left font-medium',
+                  totalNetProfit > 0
+                    ? 'text-green-500'
+                    : totalNetProfit < 0
+                    ? 'text-red-500'
+                    : 'text-white'
+                )}
+              >
+                {totalProfitStr}
+              </TableCell>
+              <TableCell />
+              <TableCell>
+                <span className="ml-1">{`${
+                  data.filter((u) => u.registered).length
+                }/${users.length}`}</span>
+              </TableCell>
+              <TableCell />
+            </TableRow>
+          </TableFooter>
         </Table>
       </div>
       <div className="flex items-center justify-end gap-8">
