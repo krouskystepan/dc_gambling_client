@@ -99,7 +99,12 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
     pageIndex: 0,
     pageSize: 10,
   })
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: 'balance',
+      desc: true,
+    },
+  ])
   const inputRef = useRef<HTMLInputElement>(null)
 
   const columns: ColumnDef<GuildMemberStatus>[] = [
