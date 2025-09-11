@@ -286,7 +286,7 @@ export const getDiscordGuildMembers = async (guildId: string) => {
         nickname: m.nick || null,
         avatarUrl: m.user.avatar
           ? `https://cdn.discordapp.com/avatars/${m.user.id}/${m.user.avatar}.png?size=128`
-          : '/default-avatar.png',
+          : '/default-avatar.jpg',
       }))
 
     guildMembersCache.set(guildId, {
