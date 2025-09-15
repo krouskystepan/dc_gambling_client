@@ -14,7 +14,7 @@ const DashboardSidebar = async () => {
   const guilds = await getUserGuilds(session)
 
   return (
-    <aside className="flex flex-col w-20 h-screen bg-black/70 backdrop-blur-md border-r border-yellow-500/10 shadow-lg p-4 gap-4 overflow-y-auto items-center">
+    <aside className="flex flex-col w-24 h-screen bg-black/70 border-r border-yellow-500/10 p-4 gap-4 items-center overflow-y-scroll hide-scrollbar">
       <Link
         href={'/'}
         className="text-xl font-extrabold text-yellow-400 mb-1 flex items-center justify-center hover:scale-110 transition duration-300"

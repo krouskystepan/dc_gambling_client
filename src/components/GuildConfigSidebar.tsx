@@ -8,7 +8,7 @@ import {
   User,
   Home,
   ChartBar,
-  Medal,
+  Award,
 } from 'lucide-react'
 
 const LINKS = [
@@ -30,7 +30,7 @@ const LINKS = [
       { id: 'channels', label: 'Channels', icon: MessagesSquare },
       { id: 'managerRoleId', label: 'Manager Role', icon: ShieldCheck },
       { id: 'vipSettings', label: 'VIP', icon: Crown },
-      { id: 'milestones', label: 'Milestones', icon: Medal },
+      { id: 'bonusSettings', label: 'Bonuses', icon: Award },
       { id: 'casinoSettings', label: 'Casino', icon: Dices },
     ],
   },

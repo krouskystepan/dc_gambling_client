@@ -30,10 +30,9 @@ const NestedFields = ({
   nestedKeys,
   form,
 }: {
-  game: keyof Pick<CasinoSettingsValues, 'slots' | 'lottery'>
+  game: keyof Pick<CasinoSettingsValues, 'slots' | 'lottery' | 'roulette'>
   settings: Record<string, unknown>
   nestedKeys: NestedGameKeys[]
-
   form: UseFormReturn<
     z.input<typeof casinoSettingsSchema>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,7 +47,15 @@ const NestedFields = ({
         const nestedObj = settings[nestedKey] as Record<string, number>
 
         return (
-          <div key={nestedKey} className="grid grid-cols-5 gap-3 mt-2">
+          <div
+            key={nestedKey}
+            className="grid gap-3 mt-2"
+            style={{
+              gridTemplateColumns: `repeat(${
+                Object.keys(nestedObj).length
+              }, minmax(0,1fr))`,
+            }}
+          >
             {Object.entries(nestedObj).map(([symbol]) => (
               <FormField
                 key={symbol}
@@ -174,14 +181,31 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
               <section key={game} className="flex flex-col gap-3">
                 <h4 className="text-xl font-semibold text-yellow-400">
                   {getReadableName(game, readableGamesNames)}{' '}
-                  <span className={`text-xs text-gray-400 flex gap-1`}>
-                    {`(RTP: ${rtp.toFixed(2)}%)`}
-                    {rtp > 95 && (
-                      <span className="text-red-500 flex gap-0.5">
-                        <TriangleAlert size={16} /> (≥ 95%)
-                      </span>
-                    )}
-                  </span>
+                  {typeof rtp === 'number' ? (
+                    <span className="text-xs text-gray-400 flex gap-1">
+                      {`RTP: ${rtp.toFixed(2)}%`}
+                      {rtp > 95 && (
+                        <span className="text-red-500 flex gap-0.5">
+                          <TriangleAlert size={16} /> (≥ 95%)
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <div className="text-xs text-gray-400 flex flex-wrap gap-1">
+                      <span className="font-medium">RTPs:</span>
+                      {Object.entries(rtp).flatMap(([bet, value], i) => [
+                        i > 0 && <span key={`sep-${i}`}>|</span>,
+                        <span key={bet} className="flex gap-1">
+                          {`${bet}: ${value.toFixed(2)}%`}
+                          {value > 95 && (
+                            <span className="text-red-500 flex gap-0.5">
+                              <TriangleAlert size={16} /> (≥ 95%)
+                            </span>
+                          )}
+                        </span>,
+                      ])}
+                    </div>
+                  )}
                 </h4>
 
                 <div className="grid grid-cols-4 gap-3">
@@ -264,6 +288,15 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
                   <NestedFields
                     game="lottery"
                     settings={watchedValues.lottery}
+                    nestedKeys={['winMultipliers']}
+                    form={form}
+                  />
+                )}
+
+                {game === 'roulette' && (
+                  <NestedFields
+                    game="roulette"
+                    settings={watchedValues.roulette}
                     nestedKeys={['winMultipliers']}
                     form={form}
                   />

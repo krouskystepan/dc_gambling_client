@@ -5,7 +5,8 @@ export type UserDoc = Document & {
   guildId: string
   balance: number
   netProfit: number
-  milestoneUnlocked: number
+  lastDailyClaim: Date
+  dailyStreak: number
   createdAt: Date
   updatedAt: Date
 }
@@ -16,7 +17,8 @@ const UserSchema = new Schema<UserDoc>(
     guildId: { type: String, required: true },
     balance: { type: Number, default: 0 },
     netProfit: { type: Number, default: 0 },
-    milestoneUnlocked: { type: Number, default: 0 },
+    lastDailyClaim: { type: Date, default: null },
+    dailyStreak: { type: Number, default: 0 },
   },
   { timestamps: true }
 )

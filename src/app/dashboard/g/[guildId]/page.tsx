@@ -1,9 +1,9 @@
 import CasinoSettingsForm from '@/components/forms/CasinoSettingsForm'
 import ChannelsForm from '@/components/forms/ChannelsForm'
 import ManagerRoleForm from '@/components/forms/ManagerRoleForm'
-import MilestonesForm from '@/components/forms/MilestonesForm'
 import VipSettingsForm from '@/components/forms/VipSettingsForm'
 import UsersList from '@/components/lists/UsersList'
+import BonusesForm from '@/components/forms/BonusesForm'
 // import VipsList from '@/components/lists/VipsList'
 
 interface GuildPageProps {
@@ -28,8 +28,8 @@ const GuildPage = async ({ params, searchParams }: GuildPageProps) => {
         return <ManagerRoleForm guildId={guildId} />
       case 'users':
         return <UsersList guildId={guildId} />
-      case 'milestones':
-        return <MilestonesForm guildId={guildId} />
+      case 'bonusSettings':
+        return <BonusesForm guildId={guildId} />
       case 'vips':
         return 'Coming soon...'
       // return <VipsList guildId={guildId} />

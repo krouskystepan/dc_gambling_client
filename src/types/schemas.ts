@@ -60,6 +60,11 @@ export const casinoSettingsSchema = z.object({
     minBet: numberField,
     maxBet: numberField,
   }),
+  roulette: z.object({
+    winMultipliers: z.record(z.string(), numberField),
+    minBet: numberField,
+    maxBet: numberField,
+  }),
   rps: z.object({
     casinoCut: numberField,
     minBet: numberField,

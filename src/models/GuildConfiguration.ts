@@ -21,6 +21,12 @@ export type GuildConfiguration = Document & {
     pricePerDay: number
     pricePerCreate: number
   }
+  bonusSettings: {
+    baseReward: number
+    streakMultiplier: number
+    maxReward: number
+    resetOnMax: number
+  }
 }
 
 const guildConfigurationSchema = new Schema<GuildConfiguration>({
@@ -50,6 +56,12 @@ const guildConfigurationSchema = new Schema<GuildConfiguration>({
     categoryId: { type: String, default: '' },
     pricePerDay: { type: Number, default: 0 },
     pricePerCreate: { type: Number, default: 0 },
+  },
+  bonusSettings: {
+    baseReward: { type: Number, default: 0 },
+    streakMultiplier: { type: Number, default: 0 },
+    maxReward: { type: Number, default: 0 },
+    resetOnMax: { type: Boolean, default: false },
   },
 })
 
