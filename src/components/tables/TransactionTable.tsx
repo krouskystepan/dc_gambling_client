@@ -127,7 +127,9 @@ TransactionTableProps) => {
   })
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    betId: false,
+  })
 
   const columns: ColumnDef<ITransaction>[] = [
     {
@@ -166,7 +168,7 @@ TransactionTableProps) => {
       header: 'Nickname',
       accessorKey: 'nickname',
       enableHiding: false,
-      size: 140,
+      size: 120,
       filterFn: multiColumnUserFilter,
     },
     {
@@ -201,7 +203,7 @@ TransactionTableProps) => {
       header: 'Amount',
       accessorKey: 'amount',
       enableHiding: false,
-      size: 100,
+      size: 80,
       cell: ({ row }) =>
         `$${formatNumberToReadableString(row.getValue('amount'))}`,
     },
@@ -216,6 +218,18 @@ TransactionTableProps) => {
 
         return (
           <Badge className={`${className} px-2`}>{source.toUpperCase()}</Badge>
+        )
+      },
+    },
+    {
+      header: 'Bet ID',
+      accessorKey: 'betId',
+      size: 120,
+      cell: ({ row }) => {
+        return (
+          <p className="wrap-anywhere">
+            {row.getValue('betId') ? row.getValue('betId') : '-'}
+          </p>
         )
       },
     },
