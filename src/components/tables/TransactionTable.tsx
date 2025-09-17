@@ -84,7 +84,7 @@ const multiColumnAdminFilter: FilterFn<ITransaction> = (
   columnId,
   filterValue
 ) => {
-  const searchable = `${row.original.handledBy} ${
+  const searchable = `${row.original.betId} ${row.original.handledBy} ${
     row.original.handledByUsername ?? ''
   }`.toLowerCase()
   return searchable.includes((filterValue ?? '').toLowerCase())
@@ -322,11 +322,11 @@ TransactionTableProps) => {
         />
 
         <Input
-          placeholder="Search by handled by..."
+          placeholder="Search by handled by or bet id..."
           onChange={(e) =>
             table.getColumn('handledByUsername')?.setFilterValue(e.target.value)
           }
-          className="max-w-52 h-[38px]"
+          className="max-w-64 h-[38px]"
         />
 
         <MultipleSelector
