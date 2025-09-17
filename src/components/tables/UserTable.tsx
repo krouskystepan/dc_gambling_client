@@ -76,6 +76,7 @@ import {
   resetBalance,
   unregisterUser,
   registerUser,
+  bonusBalance,
 } from '@/actions/database/user.action'
 import { Badge } from '../ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
@@ -463,7 +464,7 @@ function RowActions({
   }
   const [alertOpen, setAlertOpen] = useState(false)
   const [balanceModal, setBalanceModal] = useState<
-    null | 'deposit' | 'withdraw' | 'reset'
+    null | 'deposit' | 'withdraw' | 'reset' | 'bonus'
   >(null)
   const [amount, setAmount] = useState('')
 
@@ -528,6 +529,23 @@ function RowActions({
           )
           toast.success(result.message)
         } else toast.error(result.message)
+      } else if (balanceModal === 'bonus') {
+        const result = await bonusBalance(
+          row.original.userId,
+          guildId,
+          managerId,
+          value
+        )
+        if (result.success) {
+          setData((prev) =>
+            prev.map((u) =>
+              u.userId === row.original.userId
+                ? { ...u, balance: (u.balance || 0) + value }
+                : u
+            )
+          )
+          toast.success(result.message)
+        } else toast.error(result.message)
       }
     } catch (err) {
       toast.error('Action failed')
@@ -580,10 +598,11 @@ function RowActions({
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Balance Actions</DropdownMenuLabel>
 
-          {['deposit', 'withdraw', 'reset'].map((action) => {
+          {['deposit', 'withdraw', 'bonus', 'reset'].map((action) => {
             const labels: Record<string, string> = {
               deposit: 'Deposit',
               withdraw: 'Withdraw',
+              bonus: 'Bonus',
               reset: 'Reset',
             }
 
@@ -591,13 +610,16 @@ function RowActions({
               deposit: 'Add balance to user account.',
               withdraw: 'Remove balance from user account.',
               reset: 'Reset user balance (delete all transactions).',
+              bonus: 'Give a bonus to user account.',
             }
 
             return (
               <DropdownMenuItem
                 key={action}
                 onClick={() =>
-                  setBalanceModal(action as 'deposit' | 'withdraw' | 'reset')
+                  setBalanceModal(
+                    action as 'deposit' | 'withdraw' | 'reset' | 'bonus'
+                  )
                 }
                 disabled={!row.original.registered}
                 className="flex items-center justify-between"

@@ -277,3 +277,52 @@ export async function resetBalance(
     return { success: false, message: 'Server error, please try again.' }
   }
 }
+
+export async function bonusBalance(
+  userId: string,
+  guildId: string,
+  managerId: string,
+  amount: number
+) {
+  try {
+    const user = await User.findOne({ userId, guildId })
+    if (!user) return { success: false, message: 'User not registered.' }
+
+    user.balance += amount
+    await user.save()
+
+    await Transaction.create({
+      userId,
+      guildId,
+      amount: amount,
+      type: 'bonus',
+      source: 'web',
+      handledBy: managerId,
+      createdAt: new Date(),
+    })
+
+    const guildConfig = await GuildConfiguration.findOne({ guildId })
+    const logChannelId = guildConfig?.atmChannelIds.logs
+    if (logChannelId) {
+      try {
+        await sendEmbed(
+          logChannelId,
+          'ATM - Bonus Given via Web',
+          `Manager <@${managerId}> successfully given **$${formatNumberToReadableString(
+            amount
+          )}** bonus to <@${userId}>.\nTheir new balance is now: **$${formatNumberToReadableString(
+            user.balance
+          )}**.`,
+          0x57f287
+        )
+      } catch {
+        return { success: false, message: 'Failed to send log message' }
+      }
+    }
+
+    return { success: true, message: `Bonus given $${amount} to user.` }
+  } catch (err) {
+    console.error('Error giving bonus:', err)
+    return { success: false, message: 'Server error, please try again.' }
+  }
+}
