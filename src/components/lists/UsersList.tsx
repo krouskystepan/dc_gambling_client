@@ -1,7 +1,7 @@
-import { getUserWithRegistrationStatus } from '@/actions/database'
 import { authOptions } from '@/lib/authOptions'
 import { getServerSession } from 'next-auth'
-import UserTable from '../UserTable'
+import UserTable from '../tables/UserTable'
+import { getUserWithRegistrationStatus } from '@/actions/database/user.action'
 
 const UsersList = async ({ guildId }: { guildId: string }) => {
   const session = await getServerSession(authOptions)

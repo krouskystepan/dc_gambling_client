@@ -14,7 +14,6 @@ import {
 } from '../ui/form'
 import { Label } from '../ui/label'
 import { GuildChannel } from '@/types/types'
-import { getGuildChannels } from '@/actions/discord'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
@@ -22,9 +21,7 @@ import {
   atmChannelsFormSchema,
   predictionChannelsFormSchema,
   casinoChannelsFormSchema,
-  transactionsChannelsFormSchema,
 } from '@/types/schemas'
-import { getChannels, saveChannels } from '@/actions/database'
 import {
   Select,
   SelectContent,
@@ -33,11 +30,12 @@ import {
   SelectValue,
 } from '../ui/select'
 import MultipleSelector from '../ui/multiselect'
+import { getChannels, saveChannels } from '@/actions/database/channels.action'
+import { getGuildChannels } from '@/actions/discord/channel.action'
 
 const channelsFormSchema = z.object({
   atm: atmChannelsFormSchema,
   casino: casinoChannelsFormSchema,
-  transactions: transactionsChannelsFormSchema,
   prediction: predictionChannelsFormSchema,
 })
 
@@ -49,7 +47,6 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
     defaultValues: {
       atm: { actions: '', logs: '' },
       casino: { casinoChannelIds: [] },
-      transactions: { transactionChannelId: '' },
       prediction: { actions: '', logs: '' },
     },
   })
@@ -73,10 +70,6 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
         },
         casino: {
           casinoChannelIds: channels?.casino?.casinoChannelIds || [],
-        },
-        transactions: {
-          transactionChannelId:
-            channels?.transactions?.transactionChannelId || '',
         },
         prediction: {
           actions: channels?.prediction?.actions || '',
@@ -202,7 +195,7 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
                       emptyIndicator={
                         <p className="text-center text-sm">No results found</p>
                       }
-                      value={(field.value ?? []).map((id) => {
+                      value={(field.value ?? []).map((id: string) => {
                         const channel = channels.find((c) => c.id === id)
                         return { label: channel?.name ?? id, value: id }
                       })}
@@ -235,42 +228,6 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
                   </FormControl>
                   <FormDescription>
                     Select channel(s) for Casino Channels
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </section>
-
-          <section className="flex flex-col gap-4">
-            <h4 className="text-xl font-semibold text-yellow-400">
-              Transaction Channel
-            </h4>
-            <FormField
-              control={form.control}
-              name="transactions.transactionChannelId"
-              render={({ field }) => (
-                <FormItem>
-                  <Label>Transaction Channel</Label>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ''}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="bg-muted border-transparent shadow-none">
-                        <SelectValue placeholder="Select Logs Channel" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {channels.map((channel) => (
-                        <SelectItem key={channel.id} value={channel.id}>
-                          {channel.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Select channel for Transactions
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

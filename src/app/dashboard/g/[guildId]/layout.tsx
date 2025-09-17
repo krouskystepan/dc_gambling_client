@@ -1,4 +1,5 @@
-import { getGuildName, isBotInGuild } from '@/actions/discord'
+import { getGuildName } from '@/actions/discord/guilds.action'
+import { isBotInGuild } from '@/actions/discord/utils.action'
 import { getUserPermissions } from '@/actions/perms'
 import GuildConfigSidebar from '@/components/GuildConfigSidebar'
 import BotNotInGuild from '@/components/states/BotNotInGuild'

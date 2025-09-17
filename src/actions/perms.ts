@@ -4,7 +4,7 @@ import axios from 'axios'
 import { Session } from 'next-auth'
 import { connectToDatabase } from '@/lib/utils'
 import GuildConfiguration from '@/models/GuildConfiguration'
-import { fetchUserGuilds } from './discord'
+import { fetchUserGuilds } from './discord/guilds.action'
 
 export const getUserPermissions = async (
   guildId: string,

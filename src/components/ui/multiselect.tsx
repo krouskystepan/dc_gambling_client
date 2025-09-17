@@ -153,7 +153,7 @@ const CommandEmpty = ({
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) => {
   return (
     <div
-      className={cn('px-2 py-4 text-center text-sm', className)}
+      className={cn('px-2 pt-4 pb-1 text-center text-sm', className)}
       cmdk-empty=""
       role="presentation"
       {...props}

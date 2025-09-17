@@ -21,6 +21,7 @@ import {
   ChevronLastIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  CircleQuestionMark,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,14 +49,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu'
-import {
-  depositBalance,
-  registerUser,
-  resetBalance,
-  unregisterUser,
-  withdrawBalance,
-} from '@/actions/database'
+} from '../ui/dropdown-menu'
 import {
   AlertDialogHeader,
   AlertDialogFooter,
@@ -65,7 +59,7 @@ import {
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogTitle,
-} from './ui/alert-dialog'
+} from '../ui/alert-dialog'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -75,7 +69,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog'
+} from '../ui/dialog'
+import {
+  depositBalance,
+  withdrawBalance,
+  resetBalance,
+  unregisterUser,
+  registerUser,
+} from '@/actions/database/user.action'
+import { Badge } from '../ui/badge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 interface UserTableProps {
   users: GuildMemberStatus[]
@@ -110,14 +113,14 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
 
   const columns: ColumnDef<GuildMemberStatus>[] = [
     {
-      header: 'Image',
+      header: 'Avatar',
       accessorKey: 'avatar',
       enableSorting: false,
       enableColumnFilter: false,
       size: 45,
       cell: ({ row }) => (
         <Image
-          className="ml-2 rounded-full"
+          className="rounded-full"
           width={36}
           height={36}
           alt={row.getValue('username')}
@@ -145,7 +148,6 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
       accessorKey: 'nickname',
       size: 140,
       filterFn: multiColumnFilter,
-      cell: ({ row }) => row.getValue('nickname'),
     },
     {
       header: 'Balance',
@@ -195,20 +197,19 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
     {
       header: 'Registered',
       accessorKey: 'registered',
-      size: 120,
+      size: 90,
       cell: ({ row }) => {
         const isRegistered = row.getValue('registered')
         return (
-          <span
-            className={cn(
-              'px-2 py-0.5 text-xs rounded-full font-medium',
+          <Badge
+            className={
               isRegistered
                 ? 'bg-green-600 text-gray-100'
                 : 'bg-red-600 text-gray-100'
-            )}
+            }
           >
             {isRegistered ? 'Registered' : 'Not Registered'}
-          </span>
+          </Badge>
         )
       },
     },
@@ -520,7 +521,9 @@ function RowActions({
         if (result.success) {
           setData((prev) =>
             prev.map((u) =>
-              u.userId === row.original.userId ? { ...u, balance: 0 } : u
+              u.userId === row.original.userId
+                ? { ...u, balance: 0, netProfit: 0 }
+                : u
             )
           )
           toast.success(result.message)
@@ -576,30 +579,66 @@ function RowActions({
 
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Balance Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => setBalanceModal('deposit')}
-            disabled={!row.original.registered}
-          >
-            Deposit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => setBalanceModal('withdraw')}
-            disabled={!row.original.registered}
-          >
-            Withdraw
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => setBalanceModal('reset')}
-            disabled={!row.original.registered}
-          >
-            Reset
-          </DropdownMenuItem>
+
+          {['deposit', 'withdraw', 'reset'].map((action) => {
+            const labels: Record<string, string> = {
+              deposit: 'Deposit',
+              withdraw: 'Withdraw',
+              reset: 'Reset',
+            }
+
+            const descriptions: Record<string, string> = {
+              deposit: 'Add balance to user account.',
+              withdraw: 'Remove balance from user account.',
+              reset: 'Reset user balance (delete all transactions).',
+            }
+
+            return (
+              <DropdownMenuItem
+                key={action}
+                onClick={() =>
+                  setBalanceModal(action as 'deposit' | 'withdraw' | 'reset')
+                }
+                disabled={!row.original.registered}
+                className="flex items-center justify-between"
+              >
+                {labels[action]}
+                <Tooltip>
+                  <TooltipTrigger className="ml-2 text-gray-400 hover:text-gray-600 transition">
+                    <CircleQuestionMark size={16} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="font-semibold mb-1">{labels[action]}</p>
+                    <p className="text-sm">{descriptions[action]}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </DropdownMenuItem>
+            )
+          })}
 
           <DropdownMenuSeparator />
 
           <DropdownMenuLabel>Registration</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => setAlertOpen(true)}>
+          <DropdownMenuItem
+            onClick={() => setAlertOpen(true)}
+            className="flex items-center justify-between"
+          >
             {row.original.registered ? 'Unregister' : 'Register'}
+            <Tooltip>
+              <TooltipTrigger className="ml-2 text-gray-400 hover:text-gray-600 transition">
+                <CircleQuestionMark size={16} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-semibold mb-1">
+                  {row.original.registered ? 'Unregister' : 'Register'}
+                </p>
+                <p className="text-sm">
+                  {row.original.registered
+                    ? 'Unregister user (will delete from database).'
+                    : 'Register user in the system.'}
+                </p>
+              </TooltipContent>
+            </Tooltip>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -13,10 +13,6 @@ export const casinoChannelsFormSchema = z.object({
     .min(1, { message: NO_CHANNEL }),
 })
 
-export const transactionsChannelsFormSchema = z.object({
-  transactionChannelId: z.string().min(1, { message: NO_CHANNEL }),
-})
-
 export const predictionChannelsFormSchema = z.object({
   actions: z.string().min(1, { message: NO_CHANNEL }),
   logs: z.string().min(1, { message: NO_CHANNEL }),
@@ -25,15 +21,7 @@ export const predictionChannelsFormSchema = z.object({
 export const channelsFormSchema = z.object({
   atm: atmChannelsFormSchema,
   casino: casinoChannelsFormSchema,
-  transactions: transactionsChannelsFormSchema,
   prediction: predictionChannelsFormSchema,
-})
-
-export const milestoneFormSchema = z.object({
-  baseThreshold: z.number().min(0),
-  baseReward: z.number().min(0),
-  multiplierThreshold: z.number().min(1),
-  multiplierReward: z.number().min(1),
 })
 
 const numberField = z.coerce.number()

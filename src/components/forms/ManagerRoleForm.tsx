@@ -8,7 +8,6 @@ import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
-import { getManagerRole, saveManagerRole } from '@/actions/database'
 import { GuildRole, ManagerRoleValues } from '@/types/types'
 import {
   Select,
@@ -17,8 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select'
-import { getGuildRoles } from '@/actions/discord'
 import { managerRoleFormSchema } from '@/types/schemas'
+import {
+  getManagerRole,
+  saveManagerRole,
+} from '@/actions/database/managerRole.action'
+import { getGuildRoles } from '@/actions/discord/role.action'
 
 const ManagerRoleForm = ({ guildId }: { guildId: string }) => {
   const form = useForm<ManagerRoleValues>({

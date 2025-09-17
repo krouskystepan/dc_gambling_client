@@ -1,7 +1,7 @@
-import { getVips } from '@/actions/database'
 import { authOptions } from '@/lib/authOptions'
 import { getServerSession } from 'next-auth'
-import VipTable from '../VipTable'
+import VipTable from '../tables/VipTable'
+import { getVips } from '@/actions/database/vipActionts.action'
 
 const VipsList = async ({ guildId }: { guildId: string }) => {
   const session = await getServerSession(authOptions)

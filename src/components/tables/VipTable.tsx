@@ -16,7 +16,6 @@ import {
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  EllipsisIcon,
   ChevronFirstIcon,
   ChevronLastIcon,
   ChevronLeftIcon,
@@ -38,37 +37,37 @@ import {
   PaginationContent,
   PaginationItem,
 } from '@/components/ui/pagination'
-import { formatNumberToReadableString } from '@/lib/utils'
+// import { formatNumberToReadableString } from '@/lib/utils'
 import { VipChannels } from '@/types/types'
 import Image from 'next/image'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu'
-import {
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogTitle,
-} from './ui/alert-dialog'
-import { toast } from 'sonner'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog'
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from './ui/dropdown-menu'
+// import {
+//   AlertDialogHeader,
+//   AlertDialogFooter,
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogCancel,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogTitle,
+// } from './ui/alert-dialog'
+// import { toast } from 'sonner'
+// import {
+//   Dialog,
+//   DialogClose,
+//   DialogContent,
+//   DialogDescription,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogTitle,
+// } from './ui/dialog'
 
 interface VipTableProps {
   vips: VipChannels[]
@@ -87,7 +86,9 @@ const multiColumnFilter = (
   return searchableContent.includes(filterValue.toLowerCase())
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const VipTable = ({ vips, guildId, managerId }: VipTableProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState(vips)
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,

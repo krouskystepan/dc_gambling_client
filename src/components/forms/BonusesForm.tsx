@@ -3,24 +3,19 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, FormProvider, useWatch } from 'react-hook-form'
 import { useEffect, useState } from 'react'
-import {
-  FormField,
-  FormItem,
-  FormControl,
-  FormMessage,
-  Form,
-  FormLabel,
-  FormDescription,
-} from '../ui/form'
+import { FormField, FormItem, FormControl, FormMessage, Form } from '../ui/form'
 import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
 import { z } from 'zod'
-// import { getBonusSettings, saveBonusSettings } from '@/actions/database'
 import { Input } from '../ui/input'
 import { formatNumberToReadableString } from '@/lib/utils'
 import { Switch } from '../ui/switch'
+import {
+  getBonusSettings,
+  saveBonusSettings,
+} from '@/actions/database/bonusSettings.action'
 
 const bonusFormSchema = z.object({
   baseReward: z.number().min(0),
@@ -47,8 +42,8 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const settings = await getBonusSettings(guildId)
-        // if (settings) form.reset(settings)
+        const settings = await getBonusSettings(guildId)
+        if (settings) form.reset(settings)
       } catch (err) {
         console.error(err)
       } finally {
@@ -62,7 +57,7 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
     const toastId = toast.loading('Saving bonus settings...')
     try {
       console.log(values)
-      // await saveBonusSettings(guildId, values)
+      await saveBonusSettings(guildId, values)
       toast.success('Bonus settings saved!', { id: toastId })
     } catch (err) {
       console.error(err)

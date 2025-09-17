@@ -8,7 +8,6 @@ import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
-import { getVipSettings, saveVipSettings } from '@/actions/database'
 import { GuildRole, GuildChannel, VipSettingsValues } from '@/types/types'
 import {
   Select,
@@ -18,8 +17,13 @@ import {
   SelectValue,
 } from '../ui/select'
 import { Input } from '../ui/input'
-import { getGuildRoles, getGuildCategories } from '@/actions/discord'
 import { vipSettingsFormSchema } from '@/types/schemas'
+import {
+  getVipSettings,
+  saveVipSettings,
+} from '@/actions/database/vipSettings.action'
+import { getGuildCategories } from '@/actions/discord/category.action'
+import { getGuildRoles } from '@/actions/discord/role.action'
 
 const VipSettingsForm = ({ guildId }: { guildId: string }) => {
   const form = useForm<VipSettingsValues>({

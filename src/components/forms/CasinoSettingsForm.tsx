@@ -8,7 +8,6 @@ import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
-import { getCasinoSettings, saveCasinoSettings } from '@/actions/database'
 import { casinoSettingsSchema } from '@/types/schemas'
 import { Input } from '../ui/input'
 import defaultCasinoSettings, {
@@ -21,6 +20,10 @@ import { RotateCw, TriangleAlert } from 'lucide-react'
 import { Button } from '../ui/button'
 import { CasinoSettingsValues } from '@/types/types'
 import z from 'zod'
+import {
+  getCasinoSettings,
+  saveCasinoSettings,
+} from '@/actions/database/casinoSettings.action'
 
 type NestedGameKeys = 'winMultipliers' | 'symbolWeights'
 

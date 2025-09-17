@@ -3,7 +3,6 @@ import {
   casinoSettingsSchema,
   channelsFormSchema,
   managerRoleFormSchema,
-  milestoneFormSchema,
   vipSettingsFormSchema,
 } from './schemas'
 
@@ -36,7 +35,6 @@ export type ChannelsFormValues = z.infer<typeof channelsFormSchema>
 export type CasinoSettingsValues = z.infer<typeof casinoSettingsSchema>
 export type ManagerRoleValues = z.infer<typeof managerRoleFormSchema>
 export type VipSettingsValues = z.infer<typeof vipSettingsFormSchema>
-export type MilestoneValues = z.infer<typeof milestoneFormSchema>
 
 export type GuildMemberStatus = {
   userId: string

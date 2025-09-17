@@ -4,6 +4,7 @@ import ManagerRoleForm from '@/components/forms/ManagerRoleForm'
 import VipSettingsForm from '@/components/forms/VipSettingsForm'
 import UsersList from '@/components/lists/UsersList'
 import BonusesForm from '@/components/forms/BonusesForm'
+import TransactionList from '@/components/lists/TransactionList'
 // import VipsList from '@/components/lists/VipsList'
 
 interface GuildPageProps {
@@ -18,6 +19,8 @@ const GuildPage = async ({ params, searchParams }: GuildPageProps) => {
 
   const renderSection = () => {
     switch (section) {
+      case 'transactions':
+        return <TransactionList guildId={guildId} />
       case 'channels':
         return <ChannelsForm guildId={guildId} />
       case 'casinoSettings':

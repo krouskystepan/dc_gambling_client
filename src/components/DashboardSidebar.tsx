@@ -4,7 +4,7 @@ import { Dice5 } from 'lucide-react'
 import { DiscordGuild } from '@/types/types'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getUserGuilds } from '@/actions/discord'
+import { getUserGuilds } from '@/actions/discord/guilds.action'
 
 const DashboardSidebar = async () => {
   const session = await getServerSession(authOptions)
@@ -14,7 +14,7 @@ const DashboardSidebar = async () => {
   const guilds = await getUserGuilds(session)
 
   return (
-    <aside className="flex flex-col w-24 h-screen bg-black/70 border-r border-yellow-500/10 p-4 gap-4 items-center overflow-y-scroll hide-scrollbar">
+    <aside className="flex flex-col min-w-24 h-screen bg-black/70 border-r border-yellow-500/10 p-4 gap-4 items-center overflow-y-scroll hide-scrollbar">
       <Link
         href={'/'}
         className="text-xl font-extrabold text-yellow-400 mb-1 flex items-center justify-center hover:scale-110 transition duration-300"

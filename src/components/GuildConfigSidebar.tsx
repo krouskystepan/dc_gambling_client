@@ -9,12 +9,16 @@ import {
   Home,
   ChartBar,
   Award,
+  Landmark,
 } from 'lucide-react'
 
 const LINKS = [
   {
     title: 'General',
-    links: [{ id: 'home', label: 'Home', icon: Home }],
+    links: [
+      { id: 'home', label: 'Home', icon: Home },
+      { id: 'transactions', label: 'Transactions', icon: Landmark },
+    ],
   },
   {
     title: 'Manage',
