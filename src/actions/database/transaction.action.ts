@@ -43,7 +43,6 @@ export const getTransactions = async (
 
   if (!transactions.length) return { transactions: [], total }
 
-  // Collect all unique userIds including handledBy
   const userIds = Array.from(
     new Set(
       transactions.flatMap((tx) => [tx.userId, tx.handledBy].filter(Boolean))
@@ -52,7 +51,6 @@ export const getTransactions = async (
 
   const discordMembers = await getDiscordGuildMembers(guildId)
 
-  // Map userId to Discord member info
   const discordMap = new Map(
     discordMembers
       .filter((m) => userIds.includes(m.userId))

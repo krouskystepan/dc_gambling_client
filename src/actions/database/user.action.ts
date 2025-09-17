@@ -210,12 +210,20 @@ export async function getUserWithRegistrationStatus(
   for (const tx of transactions) {
     const current = netProfitMap.get(tx.userId) || 0
 
-    if (tx.type === 'bet') {
-      netProfitMap.set(tx.userId, current - tx.amount)
-    } else if (tx.type === 'win') {
-      netProfitMap.set(tx.userId, current + tx.amount)
+    switch (tx.type) {
+      case 'bet':
+        netProfitMap.set(tx.userId, current - tx.amount)
+        break
+      case 'win':
+        netProfitMap.set(tx.userId, current + tx.amount)
+        break
+      case 'bonus':
+        netProfitMap.set(tx.userId, current + tx.amount)
+        break
+      // normal deposits are ignored here
     }
   }
+
   const allUserIds = new Set<string>([
     ...dbUsers.map((u) => u.userId),
     ...discordMembers.map((m) => m.userId),

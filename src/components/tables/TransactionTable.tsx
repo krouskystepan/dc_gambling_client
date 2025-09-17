@@ -66,13 +66,24 @@ interface TransactionTableProps {
   total: number
 }
 
-const multiColumnFilter: FilterFn<ITransaction> = (
+const multiColumnUserFilter: FilterFn<ITransaction> = (
   row,
   columnId,
   filterValue
 ) => {
   const searchable = `${row.original.userId} ${row.original.username} ${
     row.original.nickname ?? ''
+  }`.toLowerCase()
+  return searchable.includes((filterValue ?? '').toLowerCase())
+}
+
+const multiColumnAdminFilter: FilterFn<ITransaction> = (
+  row,
+  columnId,
+  filterValue
+) => {
+  const searchable = `${row.original.handledBy} ${
+    row.original.handledByUsername ?? ''
   }`.toLowerCase()
   return searchable.includes((filterValue ?? '').toLowerCase())
 }
@@ -141,7 +152,7 @@ TransactionTableProps) => {
       accessorKey: 'username',
       enableHiding: false,
       size: 130,
-      filterFn: multiColumnFilter,
+      filterFn: multiColumnUserFilter,
       cell: ({ row }) => (
         <div>
           {row.getValue('username')} <br />
@@ -156,7 +167,7 @@ TransactionTableProps) => {
       accessorKey: 'nickname',
       enableHiding: false,
       size: 140,
-      filterFn: multiColumnFilter,
+      filterFn: multiColumnUserFilter,
     },
     {
       header: 'Type',
@@ -202,7 +213,7 @@ TransactionTableProps) => {
         const source = row.getValue('source') as TransactionDoc['source']
 
         const className = sourceBadgeMap[source] ?? 'bg-gray-600'
-        //text-gray-100
+
         return (
           <Badge className={`${className} px-2`}>{source.toUpperCase()}</Badge>
         )
@@ -212,7 +223,7 @@ TransactionTableProps) => {
       header: 'Handled By',
       accessorKey: 'handledByUsername',
       size: 120,
-      filterFn: multiColumnFilter,
+      filterFn: multiColumnAdminFilter,
       cell: ({ row }) => (
         <div>
           {row.getValue('handledByUsername') ? (
