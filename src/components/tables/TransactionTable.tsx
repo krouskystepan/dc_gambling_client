@@ -169,7 +169,7 @@ TransactionTableProps) => {
         const className = typeBadgeMap[type] ?? 'bg-gray-600'
 
         return (
-          <div className="flex gap-1 justify-center items-center">
+          <div className="flex gap-1 justify-start items-center">
             <Badge className={`${className} px-2`}>{type.toUpperCase()}</Badge>
             {type === 'vip' ? (
               <Tooltip>
