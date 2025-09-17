@@ -192,8 +192,10 @@ TransactionTableProps) => {
                   <CircleQuestionMark size={16} />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{row.original.meta?.['action'] as string}</p>
-                  <p>{row.original.meta?.['durationDays'] as string}</p>
+                  <p>Action: {row.original.meta?.['action'] as string}</p>
+                  <p>
+                    For {row.original.meta?.['durationDays'] as string} Days
+                  </p>
                 </TooltipContent>
               </Tooltip>
             ) : null}
