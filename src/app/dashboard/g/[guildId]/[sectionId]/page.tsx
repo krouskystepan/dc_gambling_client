@@ -5,27 +5,32 @@ import ManagerRoleForm from '@/components/forms/ManagerRoleForm'
 import VipSettingsForm from '@/components/forms/VipSettingsForm'
 import TransactionList from '@/components/lists/TransactionList'
 import UsersList from '@/components/lists/UsersList'
-import React from 'react'
 
 interface SectionPageProps {
   params: Promise<{ guildId: string; sectionId: string }>
-  searchParams?: {
+  searchParams?: Promise<{
     page?: string
     limit?: string
     search?: string
     searchAdmin?: string
     filterType?: string
     filterSource?: string
-  }
+  }>
 }
 
 const SectionPage = async ({ params, searchParams }: SectionPageProps) => {
   const { guildId, sectionId } = await params
+  const resolvedSearchParams = searchParams ? await searchParams : {}
 
   const renderSection = () => {
     switch (sectionId) {
       case 'transactions':
-        return <TransactionList guildId={guildId} searchParams={searchParams} />
+        return (
+          <TransactionList
+            guildId={guildId}
+            searchParams={resolvedSearchParams}
+          />
+        )
       case 'channels':
         return <ChannelsForm guildId={guildId} />
       case 'casinoSettings':
@@ -40,7 +45,6 @@ const SectionPage = async ({ params, searchParams }: SectionPageProps) => {
         return <BonusesForm guildId={guildId} />
       case 'vips':
         return 'Coming soon...'
-      // return <VipsList guildId={guildId} />
       case 'predictions':
         return 'Coming soon...'
       default:
