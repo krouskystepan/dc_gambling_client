@@ -1,13 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
-  FilterFn,
+  // FilterFn,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
@@ -58,6 +57,7 @@ import { Badge } from '../ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { Pagination, PaginationContent, PaginationItem } from '../ui/pagination'
 import { Label } from '../ui/label'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface TransactionTableProps {
   transactions: ITransaction[]
@@ -68,33 +68,33 @@ interface TransactionTableProps {
   total: number
 }
 
-const multiColumnUserFilter: FilterFn<ITransaction> = (
-  row,
-  columnId,
-  filterValue
-) => {
-  const searchable = `${row.original.userId} ${row.original.username} ${
-    row.original.nickname ?? ''
-  }`.toLowerCase()
-  return searchable.includes((filterValue ?? '').toLowerCase())
-}
+// const multiColumnUserFilter: FilterFn<ITransaction> = (
+//   row,
+//   columnId,
+//   filterValue
+// ) => {
+//   const searchable = `${row.original.userId} ${row.original.username} ${
+//     row.original.nickname ?? ''
+//   }`.toLowerCase()
+//   return searchable.includes((filterValue ?? '').toLowerCase())
+// }
 
-const multiColumnAdminFilter: FilterFn<ITransaction> = (
-  row,
-  columnId,
-  filterValue
-) => {
-  const searchable = `${row.original.betId} ${row.original.handledBy} ${
-    row.original.handledByUsername ?? ''
-  }`.toLowerCase()
-  return searchable.includes((filterValue ?? '').toLowerCase())
-}
+// const multiColumnAdminFilter: FilterFn<ITransaction> = (
+//   row,
+//   columnId,
+//   filterValue
+// ) => {
+//   const searchable = `${row.original.betId} ${row.original.handledBy} ${
+//     row.original.handledByUsername ?? ''
+//   }`.toLowerCase()
+//   return searchable.includes((filterValue ?? '').toLowerCase())
+// }
 
-const typeFilter: FilterFn<ITransaction> = (row, columnId, filterValue) => {
-  if (!filterValue || !filterValue.length) return true
-  const cellValue = row.getValue(columnId) as string
-  return filterValue.includes(cellValue)
-}
+// const typeFilter: FilterFn<ITransaction> = (row, columnId, filterValue) => {
+//   if (!filterValue || !filterValue.length) return true
+//   const cellValue = row.getValue(columnId) as string
+//   return filterValue.includes(cellValue)
+// }
 
 const typeBadgeMap: Record<TransactionDoc['type'], string> = {
   deposit: 'bg-emerald-500 text-white',
@@ -116,16 +116,16 @@ const sourceBadgeMap: Record<TransactionDoc['source'], string> = {
 
 const TransactionTable = ({
   transactions,
-}: // guildId,
-// managerId,
-// page,
-// limit,
-// total,
-TransactionTableProps) => {
+  // guildId,
+  // managerId,
+  page,
+  limit,
+  total,
+}: TransactionTableProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
+    pageIndex: page - 1,
+    pageSize: limit,
   })
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -156,7 +156,7 @@ TransactionTableProps) => {
       accessorKey: 'username',
       enableHiding: false,
       size: 130,
-      filterFn: multiColumnUserFilter,
+      // filterFn: multiColumnUserFilter,
       cell: ({ row }) => (
         <div>
           {row.getValue('username')} <br />
@@ -171,13 +171,13 @@ TransactionTableProps) => {
       accessorKey: 'nickname',
       enableHiding: false,
       size: 120,
-      filterFn: multiColumnUserFilter,
+      // filterFn: multiColumnUserFilter,
     },
     {
       header: 'Type',
       accessorKey: 'type',
       size: 80,
-      filterFn: typeFilter,
+      // filterFn: typeFilter,
       cell: ({ row }) => {
         const type = row.getValue('type') as TransactionDoc['type']
 
@@ -241,7 +241,7 @@ TransactionTableProps) => {
       header: 'Handled By',
       accessorKey: 'handledByUsername',
       size: 120,
-      filterFn: multiColumnAdminFilter,
+      // filterFn: multiColumnAdminFilter,
       cell: ({ row }) => (
         <div>
           {row.getValue('handledByUsername') ? (
@@ -267,19 +267,94 @@ TransactionTableProps) => {
     },
   ]
 
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const updateUrl = (
+    updates: Partial<{
+      page: number
+      limit: number
+      search?: string
+      searchAdmin?: string
+      filterType?: string
+      filterSource?: string
+    }>
+  ) => {
+    const url = new URL(window.location.href)
+
+    if (updates.page !== undefined)
+      url.searchParams.set('page', updates.page.toString())
+
+    if (updates.limit !== undefined)
+      url.searchParams.set('limit', updates.limit.toString())
+
+    if (updates.search && updates.search.length > 0)
+      url.searchParams.set('search', updates.search)
+    else url.searchParams.delete('search')
+
+    if (updates.searchAdmin && updates.searchAdmin.length > 0)
+      url.searchParams.set('searchAdmin', updates.searchAdmin)
+    else url.searchParams.delete('searchAdmin')
+
+    if (updates.filterType && updates.filterType.length > 0)
+      url.searchParams.set('filterType', updates.filterType)
+    else url.searchParams.delete('filterType')
+
+    if (updates.filterSource && updates.filterSource.length > 0)
+      url.searchParams.set('filterSource', updates.filterSource)
+    else url.searchParams.delete('filterSource')
+
+    router.push(url.pathname + url.search)
+  }
+
   const table = useReactTable({
     data: transactions,
     columns,
     state: { pagination, sorting, columnFilters, columnVisibility },
-    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(pagination) : updater
+      setPagination(next)
+      updateUrl({ page: next.pageIndex + 1, limit: next.pageSize })
+    },
+    pageCount: Math.ceil(total / limit),
+    manualPagination: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
   })
+
+  useEffect(() => {
+    setPagination({
+      pageIndex: page - 1,
+      pageSize: limit,
+    })
+  }, [page, limit])
+
+  useEffect(() => {
+    const search = searchParams?.get('search') || ''
+    const searchAdmin = searchParams?.get('searchAdmin') || ''
+    const filterType = searchParams?.get('filterType')?.split(',') || []
+    const filterSource = searchParams?.get('filterSource')?.split(',') || []
+    const page = Number(searchParams?.get('page') || 1)
+    const limit = Number(searchParams?.get('limit') || 10)
+
+    setPagination({ pageIndex: page - 1, pageSize: limit })
+    table.getColumn('username')?.setFilterValue(search || undefined)
+    table
+      .getColumn('handledByUsername')
+      ?.setFilterValue(searchAdmin || undefined)
+    table
+      .getColumn('type')
+      ?.setFilterValue(filterType.length ? filterType : undefined)
+    table
+      .getColumn('source')
+      ?.setFilterValue(filterSource.length ? filterSource : undefined)
+
+    if (inputRef.current) inputRef.current.value = search
+  }, [searchParams, table])
 
   const typeOptions = Array.from(
     new Set(transactions.map((tx) => tx.type))
@@ -317,17 +392,19 @@ TransactionTableProps) => {
         <Input
           ref={inputRef}
           placeholder="Search by id, username or nickname..."
-          onChange={(e) =>
+          onChange={(e) => {
             table.getColumn('username')?.setFilterValue(e.target.value)
-          }
+            updateUrl({ search: e.target.value, page: 1 })
+          }}
           className="max-w-72 h-[38px]"
         />
 
         <Input
           placeholder="Search by handled by or bet id..."
-          onChange={(e) =>
+          onChange={(e) => {
             table.getColumn('handledByUsername')?.setFilterValue(e.target.value)
-          }
+            updateUrl({ searchAdmin: e.target.value, page: 1 })
+          }}
           className="max-w-64 h-[38px]"
         />
 
@@ -337,13 +414,11 @@ TransactionTableProps) => {
           placeholder="Filter by type"
           emptyIndicator="No other types available"
           onChange={(selectedOptions) => {
-            if (selectedOptions.length === 0) {
-              table.getColumn('type')?.setFilterValue(undefined)
-            } else {
-              table
-                .getColumn('type')
-                ?.setFilterValue(selectedOptions.map((o) => o.realValue))
-            }
+            const types = selectedOptions.map((o) => o.realValue)
+            table
+              .getColumn('type')
+              ?.setFilterValue(types.length ? types : undefined)
+            updateUrl({ filterType: types.join(','), page: 1 })
           }}
         />
 
@@ -353,13 +428,11 @@ TransactionTableProps) => {
           placeholder="Filter by source"
           emptyIndicator="No other sources available"
           onChange={(selectedOptions) => {
-            if (selectedOptions.length === 0) {
-              table.getColumn('source')?.setFilterValue(undefined)
-            } else {
-              table
-                .getColumn('source')
-                ?.setFilterValue(selectedOptions.map((o) => o.realValue))
-            }
+            const sources = selectedOptions.map((o) => o.realValue)
+            table
+              .getColumn('source')
+              ?.setFilterValue(sources.length ? sources : undefined)
+            updateUrl({ filterSource: sources.join(','), page: 1 })
           }}
         />
 
@@ -461,7 +534,9 @@ TransactionTableProps) => {
           <Select
             value={table.getState().pagination.pageSize.toString()}
             onValueChange={(value) => {
-              table.setPageSize(Number(value))
+              const newPageSize = Number(value)
+              table.setPageSize(newPageSize)
+              updateUrl({ page: 1, limit: newPageSize })
             }}
           >
             <SelectTrigger className="w-fit whitespace-nowrap">
@@ -488,19 +563,12 @@ TransactionTableProps) => {
                 1}
               -
               {Math.min(
-                Math.max(
-                  table.getState().pagination.pageIndex *
-                    table.getState().pagination.pageSize +
-                    table.getState().pagination.pageSize,
-                  0
-                ),
-                table.getRowCount()
+                (table.getState().pagination.pageIndex + 1) *
+                  table.getState().pagination.pageSize,
+                total
               )}
             </span>{' '}
-            of{' '}
-            <span className="text-foreground">
-              {table.getRowCount().toString()}
-            </span>
+            of <span className="text-foreground">{total}</span>
           </p>
         </div>
 

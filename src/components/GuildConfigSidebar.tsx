@@ -76,8 +76,7 @@ const GuildConfigSidebar = ({
                       link.id === 'home'
                         ? { pathname: `/dashboard/g/${guildId}` }
                         : {
-                            pathname: `/dashboard/g/${guildId}`,
-                            query: { s: link.id },
+                            pathname: `/dashboard/g/${guildId}/${link.id}`,
                           }
                     }
                     className="flex items-center gap-2 px-5 py-2 text-gray-200 rounded hover:bg-yellow-500/10 hover:text-yellow-400 transition text-sm"

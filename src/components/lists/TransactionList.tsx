@@ -3,42 +3,49 @@ import { authOptions } from '@/lib/authOptions'
 import { getServerSession } from 'next-auth'
 import TransactionTable from '../tables/TransactionTable'
 
-interface TransactionListProps {
-  guildId: string
-  page?: number
-  limit?: number
-}
-
 const TransactionList = async ({
   guildId,
-  page = 1,
-  limit = 50,
-}: TransactionListProps) => {
+  searchParams,
+}: {
+  guildId: string
+  searchParams?: {
+    page?: string
+    limit?: string
+    search?: string
+    searchAdmin?: string
+    filterType?: string
+    filterSource?: string
+  }
+}) => {
   const session = await getServerSession(authOptions)
   if (!session) return null
+
+  const page = Number(searchParams?.page ?? 1)
+  const limit = Number(searchParams?.limit ?? 10)
+
+  const filterType = searchParams?.filterType?.split(',').filter(Boolean)
+  const filterSource = searchParams?.filterSource?.split(',').filter(Boolean)
 
   const { transactions, total } = await getTransactions(
     guildId,
     session,
     page,
-    limit
+    limit,
+    searchParams?.search || undefined,
+    searchParams?.searchAdmin || undefined,
+    filterType?.length ? filterType : undefined,
+    filterSource?.length ? filterSource : undefined
   )
 
   return (
-    <div>
-      <h4 className="text-3xl font-semibold text-yellow-400 mb-4">
-        Transactions
-      </h4>
-
-      <TransactionTable
-        transactions={transactions}
-        guildId={guildId}
-        managerId={session.userId!}
-        page={page}
-        limit={limit}
-        total={total}
-      />
-    </div>
+    <TransactionTable
+      transactions={transactions}
+      guildId={guildId}
+      managerId={session.userId!}
+      page={page}
+      limit={limit}
+      total={total}
+    />
   )
 }
 

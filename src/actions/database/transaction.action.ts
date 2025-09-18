@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/utils'
 import Transaction, { TransactionDoc } from '@/models/Transaction'
 import { Session } from 'next-auth'
 import { getDiscordGuildMembers } from '../discord/member.action'
+import { FilterQuery } from 'mongoose'
 
 export interface ITransaction
   extends Pick<
@@ -28,15 +29,43 @@ export const getTransactions = async (
   guildId: string,
   session: Session,
   page: number = 1,
-  limit: number = 50
+  limit: number = 50,
+  search?: string,
+  searchAdmin?: string,
+  filterType?: string[],
+  filterSource?: string[]
 ): Promise<{ transactions: ITransaction[]; total: number }> => {
   if (!session.accessToken) return { transactions: [], total: 0 }
 
   await connectToDatabase()
 
-  const total = await Transaction.countDocuments({ guildId })
+  const query: FilterQuery<TransactionDoc> = { guildId }
 
-  const transactions = await Transaction.find({ guildId })
+  if (search) {
+    const regex = new RegExp(search, 'i')
+    query.$or = [
+      { userId: regex },
+      { 'meta.username': regex },
+      { 'meta.nickname': regex },
+    ]
+  }
+
+  if (searchAdmin) {
+    const regex = new RegExp(searchAdmin, 'i')
+    query.$or = [
+      ...(query.$or || []),
+      { handledBy: regex },
+      { 'meta.handledByUsername': regex },
+      { betId: regex },
+    ]
+  }
+
+  if (filterType && filterType.length) query.type = { $in: filterType }
+  if (filterSource && filterSource.length) query.source = { $in: filterSource }
+
+  const total = await Transaction.countDocuments(query)
+
+  const transactions = await Transaction.find(query)
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit)
@@ -86,13 +115,4 @@ export const getTransactions = async (
   })
 
   return { transactions: transactionsWithUser, total }
-}
-
-export async function refetchTransactions(
-  guildId: string,
-  session: Session,
-  page = 1,
-  limit = 50
-) {
-  return await getTransactions(guildId, session, page, limit)
 }
