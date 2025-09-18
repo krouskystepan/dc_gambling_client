@@ -40,28 +40,26 @@ export const getTransactions = async (
   await connectToDatabase()
 
   const query: FilterQuery<TransactionDoc> = { guildId }
+  const andFilters: FilterQuery<TransactionDoc>[] = []
 
   if (search) {
     const regex = new RegExp(search, 'i')
-    query.$or = [
-      { userId: regex },
-      { 'meta.username': regex },
-      { 'meta.nickname': regex },
-    ]
+    andFilters.push({ userId: regex })
   }
 
   if (searchAdmin) {
     const regex = new RegExp(searchAdmin, 'i')
-    query.$or = [
-      ...(query.$or || []),
-      { handledBy: regex },
-      { 'meta.handledByUsername': regex },
-      { betId: regex },
-    ]
+    andFilters.push({
+      $or: [{ handledBy: regex }, { betId: regex }],
+    })
   }
 
-  if (filterType && filterType.length) query.type = { $in: filterType }
-  if (filterSource && filterSource.length) query.source = { $in: filterSource }
+  if (filterType && filterType.length)
+    andFilters.push({ type: { $in: filterType } })
+  if (filterSource && filterSource.length)
+    andFilters.push({ source: { $in: filterSource } })
+
+  if (andFilters.length > 0) query.$and = andFilters
 
   const total = await Transaction.countDocuments(query)
 
@@ -79,7 +77,6 @@ export const getTransactions = async (
   )
 
   const discordMembers = await getDiscordGuildMembers(guildId)
-
   const discordMap = new Map(
     discordMembers
       .filter((m) => userIds.includes(m.userId))

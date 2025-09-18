@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
-  // FilterFn,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
@@ -68,34 +67,6 @@ interface TransactionTableProps {
   total: number
 }
 
-// const multiColumnUserFilter: FilterFn<ITransaction> = (
-//   row,
-//   columnId,
-//   filterValue
-// ) => {
-//   const searchable = `${row.original.userId} ${row.original.username} ${
-//     row.original.nickname ?? ''
-//   }`.toLowerCase()
-//   return searchable.includes((filterValue ?? '').toLowerCase())
-// }
-
-// const multiColumnAdminFilter: FilterFn<ITransaction> = (
-//   row,
-//   columnId,
-//   filterValue
-// ) => {
-//   const searchable = `${row.original.betId} ${row.original.handledBy} ${
-//     row.original.handledByUsername ?? ''
-//   }`.toLowerCase()
-//   return searchable.includes((filterValue ?? '').toLowerCase())
-// }
-
-// const typeFilter: FilterFn<ITransaction> = (row, columnId, filterValue) => {
-//   if (!filterValue || !filterValue.length) return true
-//   const cellValue = row.getValue(columnId) as string
-//   return filterValue.includes(cellValue)
-// }
-
 const typeBadgeMap: Record<TransactionDoc['type'], string> = {
   deposit: 'bg-emerald-500 text-white',
   withdraw: 'bg-rose-500 text-white',
@@ -156,7 +127,6 @@ const TransactionTable = ({
       accessorKey: 'username',
       enableHiding: false,
       size: 130,
-      // filterFn: multiColumnUserFilter,
       cell: ({ row }) => (
         <div>
           {row.getValue('username')} <br />
@@ -171,13 +141,11 @@ const TransactionTable = ({
       accessorKey: 'nickname',
       enableHiding: false,
       size: 120,
-      // filterFn: multiColumnUserFilter,
     },
     {
       header: 'Type',
       accessorKey: 'type',
       size: 80,
-      // filterFn: typeFilter,
       cell: ({ row }) => {
         const type = row.getValue('type') as TransactionDoc['type']
 
@@ -241,7 +209,6 @@ const TransactionTable = ({
       header: 'Handled By',
       accessorKey: 'handledByUsername',
       size: 120,
-      // filterFn: multiColumnAdminFilter,
       cell: ({ row }) => (
         <div>
           {row.getValue('handledByUsername') ? (
@@ -282,27 +249,32 @@ const TransactionTable = ({
   ) => {
     const url = new URL(window.location.href)
 
-    if (updates.page !== undefined)
-      url.searchParams.set('page', updates.page.toString())
+    // Merge with existing params
+    const currentParams = Object.fromEntries(url.searchParams.entries())
 
-    if (updates.limit !== undefined)
-      url.searchParams.set('limit', updates.limit.toString())
+    // Update page and limit if provided, otherwise keep existing
+    url.searchParams.set(
+      'page',
+      (updates.page ?? Number(currentParams.page) ?? 1).toString()
+    )
+    url.searchParams.set(
+      'limit',
+      (updates.limit ?? Number(currentParams.limit) ?? 10).toString()
+    )
 
-    if (updates.search && updates.search.length > 0)
-      url.searchParams.set('search', updates.search)
-    else url.searchParams.delete('search')
+    // Helper to set or delete a param
+    const setParam = (key: keyof typeof updates, value?: string) => {
+      if (value !== undefined && value.length > 0)
+        url.searchParams.set(key, value)
+      else if (value === '') url.searchParams.delete(key)
+      // else keep existing
+    }
 
-    if (updates.searchAdmin && updates.searchAdmin.length > 0)
-      url.searchParams.set('searchAdmin', updates.searchAdmin)
-    else url.searchParams.delete('searchAdmin')
-
-    if (updates.filterType && updates.filterType.length > 0)
-      url.searchParams.set('filterType', updates.filterType)
-    else url.searchParams.delete('filterType')
-
-    if (updates.filterSource && updates.filterSource.length > 0)
-      url.searchParams.set('filterSource', updates.filterSource)
-    else url.searchParams.delete('filterSource')
+    // Merge updates with existing values
+    setParam('search', updates.search ?? currentParams.search)
+    setParam('searchAdmin', updates.searchAdmin ?? currentParams.searchAdmin)
+    setParam('filterType', updates.filterType ?? currentParams.filterType)
+    setParam('filterSource', updates.filterSource ?? currentParams.filterSource)
 
     router.push(url.pathname + url.search)
   }
@@ -356,42 +328,52 @@ const TransactionTable = ({
     if (inputRef.current) inputRef.current.value = search
   }, [searchParams, table])
 
-  const typeOptions = Array.from(
-    new Set(transactions.map((tx) => tx.type))
+  type Option<T = string> = {
+    value: string
+    label: string
+    realValue: T
+  }
+
+  const typeOptions: Option<TransactionDoc['type']>[] = Object.keys(
+    typeBadgeMap
   ).map((type, idx) => ({
     value: `${type}-${idx}`,
     label: type.toUpperCase(),
-    realValue: type,
+    realValue: type as TransactionDoc['type'],
   }))
 
-  const selectedTypeOptions = (
-    table.getColumn('type')?.getFilterValue() as string[] | undefined
-  )
-    ?.map((val) => typeOptions.find((opt) => opt.realValue === val))
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter(Boolean) as any[]
-
-  const sourceOptions = Array.from(
-    new Set(transactions.map((tx) => tx.source))
+  const sourceOptions: Option<TransactionDoc['source']>[] = Object.keys(
+    sourceBadgeMap
   ).map((source, idx) => ({
     value: `${source}-${idx}`,
     label: source.toUpperCase(),
-    realValue: source,
+    realValue: source as TransactionDoc['source'],
   }))
 
-  const selectedSourceOptions = (
-    table.getColumn('source')?.getFilterValue() as string[] | undefined
-  )
-    ?.map((val) => sourceOptions.find((opt) => opt.realValue === val))
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter(Boolean) as any[]
+  const selectedTypeOptions: Option<TransactionDoc['type']>[] =
+    (
+      table.getColumn('type')?.getFilterValue() as
+        | TransactionDoc['type'][]
+        | undefined
+    )
+      ?.map((val) => typeOptions.find((opt) => opt.realValue === val))
+      .filter((opt): opt is Option<TransactionDoc['type']> => !!opt) || []
+
+  const selectedSourceOptions: Option<TransactionDoc['source']>[] =
+    (
+      table.getColumn('source')?.getFilterValue() as
+        | TransactionDoc['source'][]
+        | undefined
+    )
+      ?.map((val) => sourceOptions.find((opt) => opt.realValue === val))
+      .filter((opt): opt is Option<TransactionDoc['source']> => !!opt) || []
 
   return (
     <div className="space-y-4 w-7xl">
       <div className="flex gap-2 mb-4">
         <Input
           ref={inputRef}
-          placeholder="Search by id, username or nickname..."
+          placeholder="Search by user ID..."
           onChange={(e) => {
             table.getColumn('username')?.setFilterValue(e.target.value)
             updateUrl({ search: e.target.value, page: 1 })
@@ -400,7 +382,7 @@ const TransactionTable = ({
         />
 
         <Input
-          placeholder="Search by handled by or bet id..."
+          placeholder="Search by admin ID or bet ID..."
           onChange={(e) => {
             table.getColumn('handledByUsername')?.setFilterValue(e.target.value)
             updateUrl({ searchAdmin: e.target.value, page: 1 })
