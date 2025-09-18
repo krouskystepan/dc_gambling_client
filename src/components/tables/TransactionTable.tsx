@@ -249,28 +249,20 @@ const TransactionTable = ({
   ) => {
     const url = new URL(window.location.href)
 
-    // Merge with existing params
     const currentParams = Object.fromEntries(url.searchParams.entries())
 
-    // Update page and limit if provided, otherwise keep existing
-    url.searchParams.set(
-      'page',
-      (updates.page ?? Number(currentParams.page) ?? 1).toString()
-    )
-    url.searchParams.set(
-      'limit',
-      (updates.limit ?? Number(currentParams.limit) ?? 10).toString()
-    )
+    const pageNum = updates.page ?? Number(currentParams.page)
+    const limitNum = updates.limit ?? Number(currentParams.limit)
 
-    // Helper to set or delete a param
+    url.searchParams.set('page', isNaN(pageNum) ? '1' : pageNum.toString())
+    url.searchParams.set('limit', isNaN(limitNum) ? '10' : limitNum.toString())
+
     const setParam = (key: keyof typeof updates, value?: string) => {
       if (value !== undefined && value.length > 0)
         url.searchParams.set(key, value)
       else if (value === '') url.searchParams.delete(key)
-      // else keep existing
     }
 
-    // Merge updates with existing values
     setParam('search', updates.search ?? currentParams.search)
     setParam('searchAdmin', updates.searchAdmin ?? currentParams.searchAdmin)
     setParam('filterType', updates.filterType ?? currentParams.filterType)
@@ -300,8 +292,8 @@ const TransactionTable = ({
 
   useEffect(() => {
     setPagination({
-      pageIndex: page - 1,
-      pageSize: limit,
+      pageIndex: isNaN(page) ? 0 : page - 1,
+      pageSize: isNaN(limit) ? 10 : limit,
     })
   }, [page, limit])
 
