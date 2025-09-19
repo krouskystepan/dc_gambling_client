@@ -103,6 +103,7 @@ const TransactionTable = ({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     betId: false,
   })
+  const [isLoading, setIsLoading] = useState(false)
 
   const columns: ColumnDef<ITransaction>[] = [
     {
@@ -248,7 +249,6 @@ const TransactionTable = ({
     }>
   ) => {
     const url = new URL(window.location.href)
-
     const currentParams = Object.fromEntries(url.searchParams.entries())
 
     const pageNum = updates.page ?? Number(currentParams.page)
@@ -268,8 +268,13 @@ const TransactionTable = ({
     setParam('filterType', updates.filterType ?? currentParams.filterType)
     setParam('filterSource', updates.filterSource ?? currentParams.filterSource)
 
-    router.push(url.pathname + url.search)
+    setIsLoading(true)
+    router.push(url.pathname + url.search, { scroll: false })
   }
+
+  useEffect(() => {
+    setIsLoading(false)
+  }, [searchParams])
 
   const table = useReactTable({
     data: transactions,
@@ -440,7 +445,7 @@ const TransactionTable = ({
       </div>
 
       <div className="overflow-hidden rounded-md border">
-        <Table className="table-fixed">
+        <Table className="w-full table-auto">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -475,7 +480,16 @@ const TransactionTable = ({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="text-center py-6"
+                >
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
