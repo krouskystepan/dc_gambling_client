@@ -33,7 +33,8 @@ export const getTransactions = async (
   search?: string,
   searchAdmin?: string,
   filterType?: string[],
-  filterSource?: string[]
+  filterSource?: string[],
+  sort?: string
 ): Promise<{ transactions: ITransaction[]; total: number }> => {
   if (!session.accessToken) return { transactions: [], total: 0 }
 
@@ -61,10 +62,19 @@ export const getTransactions = async (
 
   if (andFilters.length > 0) query.$and = andFilters
 
+  let sortObj: Record<string, 1 | -1> = { createdAt: -1 }
+  if (sort) {
+    sortObj = {}
+    sort.split(',').forEach((pair) => {
+      const [field, dir] = pair.split(':')
+      if (field) sortObj[field] = dir === 'asc' ? 1 : -1
+    })
+  }
+
   const total = await Transaction.countDocuments(query)
 
   const transactions = await Transaction.find(query)
-    .sort({ createdAt: -1 })
+    .sort(sortObj)
     .skip((page - 1) * limit)
     .limit(limit)
 
@@ -77,6 +87,9 @@ export const getTransactions = async (
   )
 
   const discordMembers = await getDiscordGuildMembers(guildId)
+
+  if (!discordMembers) return { transactions: [], total: 0 }
+
   const discordMap = new Map(
     discordMembers
       .filter((m) => userIds.includes(m.userId))

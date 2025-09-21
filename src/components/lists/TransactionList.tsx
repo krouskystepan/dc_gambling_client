@@ -15,6 +15,7 @@ const TransactionList = async ({
     searchAdmin?: string
     filterType?: string
     filterSource?: string
+    sort?: string
   }
 }) => {
   const session = await getServerSession(authOptions)
@@ -34,7 +35,8 @@ const TransactionList = async ({
     searchParams?.search || undefined,
     searchParams?.searchAdmin || undefined,
     filterType?.length ? filterType : undefined,
-    filterSource?.length ? filterSource : undefined
+    filterSource?.length ? filterSource : undefined,
+    searchParams?.sort || undefined // ✅
   )
 
   return (

@@ -6,12 +6,9 @@ import {
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   PaginationState,
   SortingState,
   useReactTable,
-  VisibilityState,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -100,9 +97,6 @@ const TransactionTable = ({
   })
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    betId: false,
-  })
   const [isLoading, setIsLoading] = useState(false)
 
   const columns: ColumnDef<ITransaction>[] = [
@@ -127,6 +121,7 @@ const TransactionTable = ({
       header: 'Username',
       accessorKey: 'username',
       enableHiding: false,
+      enableSorting: false,
       size: 130,
       cell: ({ row }) => (
         <div>
@@ -141,6 +136,7 @@ const TransactionTable = ({
       header: 'Nickname',
       accessorKey: 'nickname',
       enableHiding: false,
+      enableSorting: false,
       size: 120,
     },
     {
@@ -209,6 +205,7 @@ const TransactionTable = ({
     {
       header: 'Handled By',
       accessorKey: 'handledByUsername',
+      enableSorting: false,
       size: 120,
       cell: ({ row }) => (
         <div>
@@ -246,6 +243,7 @@ const TransactionTable = ({
       searchAdmin?: string
       filterType?: string
       filterSource?: string
+      sort?: string
     }>
   ) => {
     const url = new URL(window.location.href)
@@ -267,6 +265,7 @@ const TransactionTable = ({
     setParam('searchAdmin', updates.searchAdmin ?? currentParams.searchAdmin)
     setParam('filterType', updates.filterType ?? currentParams.filterType)
     setParam('filterSource', updates.filterSource ?? currentParams.filterSource)
+    setParam('sort', updates.sort ?? currentParams.sort)
 
     setIsLoading(true)
     router.push(url.pathname + url.search, { scroll: false })
@@ -274,15 +273,41 @@ const TransactionTable = ({
 
   useEffect(() => {
     setIsLoading(false)
-  }, [searchParams])
+  }, [transactions])
 
   const table = useReactTable({
     data: transactions,
     columns,
-    state: { pagination, sorting, columnFilters, columnVisibility },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+    state: {
+      pagination,
+      sorting,
+      columnFilters,
+      columnVisibility: {
+        betId: false,
+      },
+    },
+    onSortingChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(sorting) : updater
+      setSorting(next)
+      const sort = next
+        .map((s) => `${s.id}:${s.desc ? 'desc' : 'asc'}`)
+        .join(',')
+      updateUrl({ page: 1, sort })
+    },
+    onColumnFiltersChange: (updater) => {
+      const next =
+        typeof updater === 'function' ? updater(columnFilters) : updater
+      setColumnFilters(next)
+      const typeFilter =
+        (
+          next.find((f) => f.id === 'type')?.value as string[] | undefined
+        )?.join(',') ?? ''
+      const sourceFilter =
+        (
+          next.find((f) => f.id === 'source')?.value as string[] | undefined
+        )?.join(',') ?? ''
+      updateUrl({ page: 1, filterType: typeFilter, filterSource: sourceFilter })
+    },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function' ? updater(pagination) : updater
       setPagination(next)
@@ -290,9 +315,9 @@ const TransactionTable = ({
     },
     pageCount: Math.ceil(total / limit),
     manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   })
 
   useEffect(() => {
@@ -563,7 +588,6 @@ const TransactionTable = ({
         <div>
           <Pagination>
             <PaginationContent>
-              {/* First page button */}
               <PaginationItem>
                 <Button
                   size="icon"
@@ -576,7 +600,6 @@ const TransactionTable = ({
                   <ChevronFirstIcon size={16} aria-hidden="true" />
                 </Button>
               </PaginationItem>
-              {/* Previous page button */}
               <PaginationItem>
                 <Button
                   size="icon"
@@ -589,7 +612,6 @@ const TransactionTable = ({
                   <ChevronLeftIcon size={16} aria-hidden="true" />
                 </Button>
               </PaginationItem>
-              {/* Next page button */}
               <PaginationItem>
                 <Button
                   size="icon"
@@ -602,7 +624,6 @@ const TransactionTable = ({
                   <ChevronRightIcon size={16} aria-hidden="true" />
                 </Button>
               </PaginationItem>
-              {/* Last page button */}
               <PaginationItem>
                 <Button
                   size="icon"
