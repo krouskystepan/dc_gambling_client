@@ -126,3 +126,79 @@ export const getTransactions = async (
 
   return { transactions: transactionsWithUser, total }
 }
+
+export interface ITransactionCounts {
+  type: Record<TransactionDoc['type'], number>
+  source: Record<TransactionDoc['source'], number>
+}
+
+const typeBadgeMap: Record<TransactionDoc['type'], string> = {
+  deposit: '',
+  withdraw: '',
+  bet: '',
+  win: '',
+  refund: '',
+  bonus: '',
+  vip: '',
+}
+
+const sourceBadgeMap: Record<TransactionDoc['source'], string> = {
+  casino: '',
+  command: '',
+  manual: '',
+  system: '',
+  web: '',
+}
+
+export const getTransactionCounts = async (
+  guildId: string,
+  session: Session,
+  filterType?: string[],
+  filterSource?: string[]
+): Promise<ITransactionCounts> => {
+  if (!session.accessToken)
+    return {
+      type: Object.fromEntries(
+        Object.keys(typeBadgeMap).map((t) => [t, 0])
+      ) as Record<TransactionDoc['type'], number>,
+      source: Object.fromEntries(
+        Object.keys(sourceBadgeMap).map((s) => [s, 0])
+      ) as Record<TransactionDoc['source'], number>,
+    }
+
+  await connectToDatabase()
+
+  const baseQuery: FilterQuery<TransactionDoc> = { guildId }
+
+  if (filterType && filterType.length)
+    baseQuery.type = { $in: filterType as TransactionDoc['type'][] }
+
+  if (filterSource && filterSource.length)
+    baseQuery.source = { $in: filterSource as TransactionDoc['source'][] }
+
+  const typeAgg = await Transaction.aggregate([
+    { $match: baseQuery },
+    { $group: { _id: '$type', count: { $sum: 1 } } },
+  ])
+
+  const sourceAgg = await Transaction.aggregate([
+    { $match: baseQuery },
+    { $group: { _id: '$source', count: { $sum: 1 } } },
+  ])
+
+  const typeCounts = Object.fromEntries(
+    Object.keys(typeBadgeMap).map((t) => [t, 0])
+  ) as Record<TransactionDoc['type'], number>
+  typeAgg.forEach((t) => {
+    typeCounts[t._id as TransactionDoc['type']] = t.count
+  })
+
+  const sourceCounts = Object.fromEntries(
+    Object.keys(sourceBadgeMap).map((s) => [s, 0])
+  ) as Record<TransactionDoc['source'], number>
+  sourceAgg.forEach((s) => {
+    sourceCounts[s._id as TransactionDoc['source']] = s.count
+  })
+
+  return { type: typeCounts, source: sourceCounts }
+}

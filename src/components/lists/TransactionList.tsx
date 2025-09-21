@@ -1,4 +1,7 @@
-import { getTransactions } from '@/actions/database/transaction.action'
+import {
+  getTransactionCounts,
+  getTransactions,
+} from '@/actions/database/transaction.action'
 import { authOptions } from '@/lib/authOptions'
 import { getServerSession } from 'next-auth'
 import TransactionTable from '../tables/TransactionTable'
@@ -36,12 +39,20 @@ const TransactionList = async ({
     searchParams?.searchAdmin || undefined,
     filterType?.length ? filterType : undefined,
     filterSource?.length ? filterSource : undefined,
-    searchParams?.sort || undefined // ✅
+    searchParams?.sort || undefined
+  )
+
+  const transactionCounts = await getTransactionCounts(
+    guildId,
+    session,
+    filterType?.length ? filterType : undefined,
+    filterSource?.length ? filterSource : undefined
   )
 
   return (
     <TransactionTable
       transactions={transactions}
+      transactionCounts={transactionCounts}
       guildId={guildId}
       managerId={session.userId!}
       page={page}

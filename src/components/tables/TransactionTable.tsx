@@ -7,6 +7,7 @@ import {
   flexRender,
   getCoreRowModel,
   PaginationState,
+  VisibilityState,
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
@@ -43,20 +44,27 @@ import {
   ChevronUpIcon,
   CircleQuestionMark,
   Columns3Icon,
+  FilterIcon,
 } from 'lucide-react'
 import { formatNumberToReadableString } from '@/lib/utils'
 import Image from 'next/image'
-import { ITransaction } from '@/actions/database/transaction.action'
-import MultipleSelector from '../ui/multiselect'
+import {
+  ITransaction,
+  ITransactionCounts,
+} from '@/actions/database/transaction.action'
 import { TransactionDoc } from '@/models/Transaction'
 import { Badge } from '../ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { Pagination, PaginationContent, PaginationItem } from '../ui/pagination'
 import { Label } from '../ui/label'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useDebounce } from '@/hooks/useDebounce'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
+import { Checkbox } from '../ui/checkbox'
 
 interface TransactionTableProps {
   transactions: ITransaction[]
+  transactionCounts: ITransactionCounts
   guildId: string
   managerId: string
   page: number
@@ -84,6 +92,7 @@ const sourceBadgeMap: Record<TransactionDoc['source'], string> = {
 
 const TransactionTable = ({
   transactions,
+  transactionCounts,
   // guildId,
   // managerId,
   page,
@@ -97,6 +106,9 @@ const TransactionTable = ({
   })
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    betId: false,
+  })
   const [isLoading, setIsLoading] = useState(false)
 
   const columns: ColumnDef<ITransaction>[] = [
@@ -267,7 +279,6 @@ const TransactionTable = ({
     setParam('filterSource', updates.filterSource ?? currentParams.filterSource)
     setParam('sort', updates.sort ?? currentParams.sort)
 
-    setIsLoading(true)
     router.push(url.pathname + url.search, { scroll: false })
   }
 
@@ -282,10 +293,9 @@ const TransactionTable = ({
       pagination,
       sorting,
       columnFilters,
-      columnVisibility: {
-        betId: false,
-      },
+      columnVisibility,
     },
+    onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: (updater) => {
       const next = typeof updater === 'function' ? updater(sorting) : updater
       setSorting(next)
@@ -356,11 +366,14 @@ const TransactionTable = ({
     realValue: T
   }
 
+  const capitalizeFirst = (str: string) =>
+    str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+
   const typeOptions: Option<TransactionDoc['type']>[] = Object.keys(
     typeBadgeMap
   ).map((type, idx) => ({
     value: `${type}-${idx}`,
-    label: type.toUpperCase(),
+    label: capitalizeFirst(type),
     realValue: type as TransactionDoc['type'],
   }))
 
@@ -368,7 +381,7 @@ const TransactionTable = ({
     sourceBadgeMap
   ).map((source, idx) => ({
     value: `${source}-${idx}`,
-    label: source.toUpperCase(),
+    label: capitalizeFirst(source),
     realValue: source as TransactionDoc['source'],
   }))
 
@@ -390,83 +403,216 @@ const TransactionTable = ({
       ?.map((val) => sourceOptions.find((opt) => opt.realValue === val))
       .filter((opt): opt is Option<TransactionDoc['source']> => !!opt) || []
 
+  const debouncedUpdateUrl = useDebounce<Parameters<typeof updateUrl>[0]>(
+    updateUrl,
+    500
+  )
+
   return (
     <div className="space-y-4 w-7xl">
-      <div className="flex gap-2 mb-4">
-        <Input
-          ref={inputRef}
-          placeholder="Search by user ID..."
-          onChange={(e) => {
-            table.getColumn('username')?.setFilterValue(e.target.value)
-            updateUrl({ search: e.target.value, page: 1 })
-          }}
-          className="max-w-72 h-[38px]"
-        />
+      <div className="flex justify-between gap-2">
+        <div className="flex gap-2 flex-1 min-w-0">
+          <Input
+            ref={inputRef}
+            placeholder="Search by user ID..."
+            onChange={(e) => {
+              table.getColumn('username')?.setFilterValue(e.target.value)
+              debouncedUpdateUrl({ search: e.target.value, page: 1 })
+            }}
+            className="max-w-60 h-[38px]"
+          />
 
-        <Input
-          placeholder="Search by admin ID or bet ID..."
-          onChange={(e) => {
-            table.getColumn('handledByUsername')?.setFilterValue(e.target.value)
-            updateUrl({ searchAdmin: e.target.value, page: 1 })
-          }}
-          className="max-w-64 h-[38px]"
-        />
+          <Input
+            placeholder="Search by admin ID or bet ID..."
+            onChange={(e) => {
+              table
+                .getColumn('handledByUsername')
+                ?.setFilterValue(e.target.value)
+              debouncedUpdateUrl({ search: e.target.value, page: 1 })
+            }}
+            className="max-w-60 h-[38px]"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="h-[38px]">
+                <FilterIcon
+                  className="-ms-1 opacity-60"
+                  size={16}
+                  aria-hidden="true"
+                />
+                Type
+                {selectedTypeOptions.length > 0 && (
+                  <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
+                    {selectedTypeOptions.length}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto min-w-36 p-3" align="start">
+              <div className="space-y-3">
+                <div className="text-muted-foreground text-xs font-medium">
+                  Filter by Type
+                </div>
+                <div className="space-y-3">
+                  {typeOptions.map((option, i) => {
+                    const count = transactionCounts.type[option.realValue] ?? 0
+                    return (
+                      <div
+                        key={option.value}
+                        className="flex items-center gap-2"
+                      >
+                        <Checkbox
+                          id={`type-${i}`}
+                          checked={selectedTypeOptions.some(
+                            (sel) => sel.realValue === option.realValue
+                          )}
+                          onCheckedChange={(checked: boolean) => {
+                            let next: Option<TransactionDoc['type']>[] = []
+                            if (checked) {
+                              next = [...selectedTypeOptions, option]
+                            } else {
+                              next = selectedTypeOptions.filter(
+                                (sel) => sel.realValue !== option.realValue
+                              )
+                            }
+                            table
+                              .getColumn('type')
+                              ?.setFilterValue(
+                                next.length
+                                  ? next.map((o) => o.realValue)
+                                  : undefined
+                              )
+                            updateUrl({
+                              filterType: next
+                                .map((o) => o.realValue)
+                                .join(','),
+                              page: 1,
+                            })
+                          }}
+                        />
+                        <Label
+                          htmlFor={`type-${i}`}
+                          className="flex grow justify-between gap-2 font-normal"
+                        >
+                          {option.label}
+                          <span className="text-muted-foreground ms-2 text-xs">
+                            {count}
+                          </span>
+                        </Label>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
 
-        <MultipleSelector
-          value={selectedTypeOptions}
-          options={typeOptions}
-          placeholder="Filter by type"
-          emptyIndicator="No other types available"
-          onChange={(selectedOptions) => {
-            const types = selectedOptions.map((o) => o.realValue)
-            table
-              .getColumn('type')
-              ?.setFilterValue(types.length ? types : undefined)
-            updateUrl({ filterType: types.join(','), page: 1 })
-          }}
-        />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="h-[38px]">
+                <FilterIcon
+                  className="-ms-1 opacity-60"
+                  size={16}
+                  aria-hidden="true"
+                />
+                Source
+                {selectedSourceOptions.length > 0 && (
+                  <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
+                    {selectedSourceOptions.length}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto min-w-36 p-3" align="start">
+              <div className="space-y-3">
+                <div className="text-muted-foreground text-xs font-medium">
+                  Filter by Source
+                </div>
+                <div className="space-y-3">
+                  {sourceOptions.map((option, i) => {
+                    const count =
+                      transactionCounts.source[option.realValue] ?? 0
+                    return (
+                      <div
+                        key={option.value}
+                        className="flex items-center gap-2"
+                      >
+                        <Checkbox
+                          id={`source-${i}`}
+                          checked={selectedSourceOptions.some(
+                            (sel) => sel.realValue === option.realValue
+                          )}
+                          onCheckedChange={(checked) => {
+                            let next: Option<TransactionDoc['source']>[] = []
+                            if (checked) {
+                              next = [...selectedSourceOptions, option]
+                            } else {
+                              next = selectedSourceOptions.filter(
+                                (sel) => sel.realValue !== option.realValue
+                              )
+                            }
+                            table
+                              .getColumn('source')
+                              ?.setFilterValue(
+                                next.length
+                                  ? next.map((o) => o.realValue)
+                                  : undefined
+                              )
+                            updateUrl({
+                              filterSource: next
+                                .map((o) => o.realValue)
+                                .join(','),
+                              page: 1,
+                            })
+                          }}
+                        />
+                        <Label
+                          htmlFor={`source-${i}`}
+                          className="flex grow justify-between gap-2 font-normal"
+                        >
+                          {option.label}
+                          <span className="text-muted-foreground ms-2 text-xs">
+                            {count}
+                          </span>
+                        </Label>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
 
-        <MultipleSelector
-          value={selectedSourceOptions}
-          options={sourceOptions}
-          placeholder="Filter by source"
-          emptyIndicator="No other sources available"
-          onChange={(selectedOptions) => {
-            const sources = selectedOptions.map((o) => o.realValue)
-            table
-              .getColumn('source')
-              ?.setFilterValue(sources.length ? sources : undefined)
-            updateUrl({ filterSource: sources.join(','), page: 1 })
-          }}
-        />
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="bg-transparent h-full border border-input"
-            >
-              <Columns3Icon size={16} /> Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-            {table
-              .getAllColumns()
-              .filter((col) => col.getCanHide())
-              .map((col) => (
-                <DropdownMenuCheckboxItem
-                  key={col.id}
-                  checked={col.getIsVisible()}
-                  onCheckedChange={(value) => col.toggleVisibility(!!value)}
-                >
-                  {typeof col.columnDef.header === 'string'
-                    ? col.columnDef.header
-                    : col.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="bg-transparent h-full border border-input"
+              >
+                <Columns3Icon size={16} /> View
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              {table
+                .getAllColumns()
+                .filter((col) => col.getCanHide())
+                .map((col) => (
+                  <DropdownMenuCheckboxItem
+                    key={col.id}
+                    checked={col.getIsVisible()}
+                    onCheckedChange={(value) => col.toggleVisibility(!!value)}
+                  >
+                    {typeof col.columnDef.header === 'string'
+                      ? col.columnDef.header
+                      : col.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-md border">
