@@ -1,6 +1,8 @@
 import defaultCasinoSettings from '@/lib/defaultConfig'
 import { Schema, model, models, Document } from 'mongoose'
 
+export type RewardMode = 'linear' | 'exponential'
+
 export type GuildConfiguration = Document & {
   guildId: string
   atmChannelIds: {
@@ -21,10 +23,16 @@ export type GuildConfiguration = Document & {
     pricePerCreate: number
   }
   bonusSettings: {
+    rewardMode: RewardMode
     baseReward: number
-    streakMultiplier: number
+    streakIncrement?: number
+    streakMultiplier?: number
     maxReward: number
-    resetOnMax: number
+    resetOnMax: boolean
+    milestoneBonus: {
+      weekly: number
+      monthly: number
+    }
   }
 }
 
@@ -56,10 +64,20 @@ const guildConfigurationSchema = new Schema<GuildConfiguration>({
     pricePerCreate: { type: Number, default: 0 },
   },
   bonusSettings: {
+    rewardMode: {
+      type: String,
+      enum: ['linear', 'exponential'],
+      default: 'linear',
+    },
     baseReward: { type: Number, default: 0 },
+    streakIncrement: { type: Number, default: 0 },
     streakMultiplier: { type: Number, default: 0 },
     maxReward: { type: Number, default: 0 },
     resetOnMax: { type: Boolean, default: false },
+    milestoneBonus: {
+      weekly: { type: Number, default: 0 },
+      monthly: { type: Number, default: 0 },
+    },
   },
 })
 

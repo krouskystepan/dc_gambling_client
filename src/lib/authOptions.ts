@@ -14,7 +14,7 @@ async function refreshAccessToken(token: JWT) {
   try {
     const url = 'https://discord.com/api/oauth2/token'
     const params = new URLSearchParams({
-      client_id: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!,
+      client_id: process.env.DISCORD_CLIENT_ID!, // server-only
       client_secret: process.env.DISCORD_CLIENT_SECRET!,
       grant_type: 'refresh_token',
       refresh_token: token.refreshToken as string,
@@ -45,8 +45,8 @@ async function refreshAccessToken(token: JWT) {
 export const authOptions: AuthOptions = {
   providers: [
     DiscordProvider({
-      clientId: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      clientId: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!, // frontend
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!, // server-only
       authorization: {
         params: { scope: 'identify guilds' },
       },

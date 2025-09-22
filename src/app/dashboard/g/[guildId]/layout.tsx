@@ -43,7 +43,7 @@ const GuildConfLayout = async ({ children, params }: GuildConfLayoutProps) => {
         isAdmin={isAdmin}
       />
 
-      <main className="flex flex-1 justify-center p-6 overflow-auto">
+      <main className="flex flex-1 justify-start p-6 overflow-auto">
         {children}
       </main>
     </div>

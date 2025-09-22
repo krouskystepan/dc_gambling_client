@@ -1,11 +1,11 @@
 'use server'
 
-import { BonusFormValues } from '@/components/forms/BonusesForm'
 import { authOptions } from '@/lib/authOptions'
 import { connectToDatabase } from '@/lib/utils'
 import GuildConfiguration from '@/models/GuildConfiguration'
 import { getServerSession } from 'next-auth'
 import { getUserPermissions } from '../perms'
+import { BonusFormValues } from '@/types/types'
 
 export async function getBonusSettings(
   guildId: string
@@ -15,11 +15,19 @@ export async function getBonusSettings(
   const doc = await GuildConfiguration.findOne({ guildId })
   if (!doc) return null
 
+  const bonus = doc.bonusSettings ?? {}
+
   return {
-    baseReward: doc.bonusSettings?.baseReward ?? 0,
-    streakMultiplier: doc.bonusSettings?.streakMultiplier ?? 1,
-    maxReward: doc.bonusSettings?.maxReward ?? 0,
-    resetOnMax: doc.bonusSettings?.resetOnMax ?? false,
+    rewardMode: bonus.rewardMode ?? 'linear',
+    baseReward: bonus.baseReward ?? 0,
+    streakIncrement: bonus.streakIncrement ?? 0,
+    streakMultiplier: bonus.streakMultiplier ?? 1,
+    maxReward: bonus.maxReward ?? 0,
+    resetOnMax: bonus.resetOnMax ?? false,
+    milestoneBonus: {
+      weekly: bonus.milestoneBonus?.weekly ?? 0,
+      monthly: bonus.milestoneBonus?.monthly ?? 0,
+    },
   }
 }
 
@@ -41,10 +49,18 @@ export async function saveBonusSettings(
 
   if (!updatedDoc) return null
 
+  const bonus = updatedDoc.bonusSettings ?? {}
+
   return {
-    baseReward: updatedDoc.bonusSettings?.baseReward ?? 0,
-    streakMultiplier: updatedDoc.bonusSettings?.streakMultiplier ?? 1,
-    maxReward: updatedDoc.bonusSettings?.maxReward ?? 0,
-    resetOnMax: updatedDoc.bonusSettings?.resetOnMax ?? false,
+    rewardMode: bonus.rewardMode ?? 'linear',
+    baseReward: bonus.baseReward ?? 0,
+    streakIncrement: bonus.streakIncrement ?? 0,
+    streakMultiplier: bonus.streakMultiplier ?? 1,
+    maxReward: bonus.maxReward ?? 0,
+    resetOnMax: bonus.resetOnMax ?? false,
+    milestoneBonus: {
+      weekly: bonus.milestoneBonus?.weekly ?? 0,
+      monthly: bonus.milestoneBonus?.monthly ?? 0,
+    },
   }
 }

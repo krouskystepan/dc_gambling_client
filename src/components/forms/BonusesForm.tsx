@@ -8,7 +8,6 @@ import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
-import { z } from 'zod'
 import { Input } from '../ui/input'
 import { formatNumberToReadableString } from '@/lib/utils'
 import { Switch } from '../ui/switch'
@@ -16,24 +15,30 @@ import {
   getBonusSettings,
   saveBonusSettings,
 } from '@/actions/database/bonusSettings.action'
-
-const bonusFormSchema = z.object({
-  baseReward: z.number().min(0),
-  streakMultiplier: z.number().min(0.01), // allow decimals > 0
-  maxReward: z.number().min(0),
-  resetOnMax: z.boolean(),
-})
-
-export type BonusFormValues = z.infer<typeof bonusFormSchema>
+import { bonusFormSchema } from '@/types/schemas'
+import { BonusFormValues } from '@/types/types'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select'
 
 const BonusesForm = ({ guildId }: { guildId: string }) => {
   const form = useForm<BonusFormValues>({
     resolver: zodResolver(bonusFormSchema),
     defaultValues: {
+      rewardMode: 'linear',
       baseReward: 0,
+      streakIncrement: 0,
       streakMultiplier: 1,
       maxReward: 0,
       resetOnMax: false,
+      milestoneBonus: {
+        weekly: 0,
+        monthly: 0,
+      },
     },
   })
 
@@ -56,7 +61,6 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
   const onSubmit = async (values: BonusFormValues) => {
     const toastId = toast.loading('Saving bonus settings...')
     try {
-      console.log(values)
       await saveBonusSettings(guildId, values)
       toast.success('Bonus settings saved!', { id: toastId })
     } catch (err) {
@@ -65,28 +69,52 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
     }
   }
 
-  const watchedValues = useWatch({ control: form.control })
-  const baseReward = Number(watchedValues?.baseReward ?? 0)
-  const multiplier = Number(watchedValues?.streakMultiplier ?? 1)
-  const maxReward = Number(watchedValues?.maxReward ?? 0)
-  const resetOnMax = watchedValues?.resetOnMax ?? false
+  const watched = useWatch({ control: form.control })
+  const {
+    baseReward = 0,
+    streakIncrement = 0,
+    streakMultiplier = 1,
+    maxReward = 0,
+    resetOnMax = false,
+    milestoneBonus: {
+      weekly: milestoneWeekly = 0,
+      monthly: milestoneMonthly = 0,
+    } = {},
+    rewardMode = 'linear',
+  } = watched ?? {}
 
   const preview: { day: number; reward: number }[] = []
-  let reward = baseReward
-  for (let i = 1; i <= 30; i++) {
-    let displayReward = reward
 
-    if (maxReward > 0 && reward > maxReward) {
-      if (resetOnMax) {
-        displayReward = baseReward
-        reward = baseReward
-      } else {
-        displayReward = maxReward
+  for (let i = 1; i <= 90; i++) {
+    let reward = 0
+
+    const base = Number(baseReward)
+    const inc = Number(streakIncrement)
+    const mult = Number(streakMultiplier)
+    const max = Number(maxReward)
+    const weeklyMilestone = Number(milestoneWeekly)
+    const monthlyMilestone = Number(milestoneMonthly)
+
+    if (rewardMode === 'linear') {
+      reward = base + (i - 1) * inc
+      if (max > 0 && reward > max) {
+        reward = resetOnMax ? base : max
       }
     }
 
-    preview.push({ day: i, reward: Number(displayReward.toFixed(2)) })
-    reward *= multiplier
+    if (rewardMode === 'exponential') {
+      reward = base * Math.pow(mult, i - 1)
+      if (max > 0 && reward > max) {
+        reward = resetOnMax ? base : max
+      }
+    }
+
+    // milestones
+    let milestone = 0
+    if (i % 7 === 0) milestone += weeklyMilestone
+    if (i % 28 === 0) milestone += monthlyMilestone // changed from 30 to 28
+
+    preview.push({ day: i, reward: reward + milestone })
   }
 
   if (loading) return <LoadingScreen />
@@ -102,52 +130,170 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
             Bonus Settings
           </h4>
 
-          <div className="grid grid-cols-2 gap-4 w-full">
-            {['baseReward', 'streakMultiplier', 'maxReward'].map((name) => {
-              const labelMap: Record<string, string> = {
-                baseReward: 'Base Reward',
-                streakMultiplier: 'Streak Multiplier',
-                maxReward: 'Max Reward',
-              }
-              return (
-                <FormField
-                  key={name}
-                  control={form.control}
-                  name={name as keyof BonusFormValues}
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label>{labelMap[name]}</Label>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          value={field.value?.toString() ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value
-                            if (/^\d*\.?\d*$/.test(val)) {
-                              field.onChange(val)
-                            }
-                          }}
-                          onBlur={() => {
-                            const parsed = parseFloat(
-                              field.value as unknown as string
-                            )
-                            field.onChange(isNaN(parsed) ? 0 : parsed)
-                          }}
-                          className="bg-muted border-transparent shadow-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )
-            })}
+          <div className="grid grid-cols-3 gap-4 w-full">
+            <FormField
+              control={form.control}
+              name="rewardMode"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Reward Mode</Label>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="bg-muted border-transparent shadow-none">
+                        <SelectValue placeholder="Select reward mode" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="linear">Linear</SelectItem>
+                      <SelectItem value="exponential">Exponential</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="baseReward"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Base Reward</Label>
+                  <FormControl>
+                    <Input
+                      className="bg-muted border-transparent shadow-none"
+                      type="text"
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        field.onChange(Number(value))
+                      }}
+                      value={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="maxReward"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Max Reward</Label>
+                  <FormControl>
+                    <Input
+                      className="bg-muted border-transparent shadow-none"
+                      type="text"
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        field.onChange(Number(value))
+                      }}
+                      value={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {rewardMode === 'linear' && (
+              <FormField
+                control={form.control}
+                name="streakIncrement"
+                render={({ field }) => (
+                  <FormItem>
+                    <Label>Streak Increment (Linear)</Label>
+                    <FormControl>
+                      <Input
+                        className="bg-muted border-transparent shadow-none"
+                        type="text"
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '')
+                          field.onChange(Number(value))
+                        }}
+                        value={field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {rewardMode === 'exponential' && (
+              <FormField
+                control={form.control}
+                name="streakMultiplier"
+                render={({ field }) => (
+                  <FormItem>
+                    <Label>Streak Multiplier (Exponential)</Label>
+                    <FormControl>
+                      <Input
+                        className="bg-muted border-transparent shadow-none"
+                        type="text"
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '')
+                          field.onChange(Number(value))
+                        }}
+                        value={field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <FormField
+              control={form.control}
+              name="milestoneBonus.weekly"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Weekly Milestone Bonus (7d)</Label>
+                  <FormControl>
+                    <Input
+                      className="bg-muted border-transparent shadow-none"
+                      type="text"
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        field.onChange(Number(value))
+                      }}
+                      value={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="milestoneBonus.monthly"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Monthly Milestone Bonus (28d)</Label>
+                  <FormControl>
+                    <Input
+                      className="bg-muted border-transparent shadow-none"
+                      type="text"
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        field.onChange(Number(value))
+                      }}
+                      value={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
               name="resetOnMax"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border px-4 py-2">
+                <FormItem className="col-start-2 flex flex-row items-center justify-between rounded-lg border px-4 py-2">
                   <Label>Reset On Max Reward</Label>
                   <FormControl>
                     <Switch
@@ -163,22 +309,46 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
 
           <SaveButton />
 
-          <div className="p-4 text-white max-w-xl">
-            <h5 className="font-semibold mb-3 text-yellow-400">
-              Preview (Next 30 days)
+          <div className="p-2 w-full text-white">
+            <h5 className="text-yellow-400 font-semibold mb-2 text-lg">
+              Preview (Next 90 Days)
             </h5>
-            <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto hide-scrollbar">
-              {preview.map((p) => (
-                <div
-                  key={p.day}
-                  className="flex justify-between items-center py-2 px-2 border-b-2"
-                >
-                  <span className="font-semibold">Day #{p.day}</span>
-                  <span className="text-yellow-400 font-semibold">
-                    {formatNumberToReadableString(p.reward)}
-                  </span>
-                </div>
-              ))}
+            <div className="grid grid-cols-3 gap-4 max-h-[540px] overflow-y-auto hide-scrollbar">
+              {preview.map((p) => {
+                const weekly = p.day % 7 === 0 ? milestoneWeekly : 0
+                const monthly = p.day % 28 === 0 ? milestoneMonthly : 0
+                const base = p.reward - weekly - monthly
+                const total = p.reward
+
+                return (
+                  <div
+                    key={p.day}
+                    className="flex flex-col p-2 border-b border-gray-700"
+                  >
+                    <div className="flex justify-between">
+                      <span className="text-yellow-400">Day #{p.day}</span>
+                      <span className="font-semibold">
+                        {formatNumberToReadableString(total)}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 text-xs">
+                      <span className="text-gray-300">
+                        B: {formatNumberToReadableString(base)}
+                      </span>
+                      {weekly > 0 && (
+                        <span className="text-blue-400 font-medium">
+                          W: {formatNumberToReadableString(weekly)}
+                        </span>
+                      )}
+                      {monthly > 0 && (
+                        <span className="text-green-400 font-bold">
+                          M: {formatNumberToReadableString(monthly)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </form>

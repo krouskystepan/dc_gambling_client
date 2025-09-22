@@ -84,3 +84,16 @@ export const vipSettingsFormSchema = z.object({
 export const managerRoleFormSchema = z.object({
   managerRoleId: z.string().min(1, 'Select a manager role'),
 })
+
+export const bonusFormSchema = z.object({
+  rewardMode: z.enum(['linear', 'exponential']),
+  baseReward: z.number().min(0),
+  streakIncrement: z.number().min(0).optional(),
+  streakMultiplier: z.number().min(0).optional(),
+  maxReward: z.number().min(0),
+  resetOnMax: z.boolean(),
+  milestoneBonus: z.object({
+    weekly: z.number().min(0),
+    monthly: z.number().min(0),
+  }),
+})
