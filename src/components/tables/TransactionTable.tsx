@@ -45,6 +45,7 @@ import {
   CircleQuestionMark,
   Columns3Icon,
   FilterIcon,
+  RefreshCcw,
 } from 'lucide-react'
 import { formatNumberToReadableString } from '@/lib/utils'
 import Image from 'next/image'
@@ -587,10 +588,7 @@ const TransactionTable = ({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="bg-transparent h-full border border-input"
-              >
+              <Button variant="outline" className="h-full">
                 <Columns3Icon size={16} /> View
               </Button>
             </DropdownMenuTrigger>
@@ -612,6 +610,19 @@ const TransactionTable = ({
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setIsLoading(true)
+              const url = new URL(window.location.href)
+              router.replace(url.pathname + url.search, { scroll: false })
+            }}
+            disabled={isLoading}
+            className="h-full"
+          >
+            <RefreshCcw size={16} /> Refresh
+          </Button>
         </div>
       </div>
 
