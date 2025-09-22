@@ -332,21 +332,15 @@ const TransactionTable = ({
   })
 
   useEffect(() => {
-    setPagination({
-      pageIndex: isNaN(page) ? 0 : page - 1,
-      pageSize: isNaN(limit) ? 10 : limit,
-    })
-  }, [page, limit])
-
-  useEffect(() => {
     const search = searchParams?.get('search') || ''
     const searchAdmin = searchParams?.get('searchAdmin') || ''
     const filterType = searchParams?.get('filterType')?.split(',') || []
     const filterSource = searchParams?.get('filterSource')?.split(',') || []
-    const page = Number(searchParams?.get('page') || 1)
-    const limit = Number(searchParams?.get('limit') || 10)
+    const pageFromUrl = Number(searchParams?.get('page') || 1)
+    const limitFromUrl = Number(searchParams?.get('limit') || 10)
 
-    setPagination({ pageIndex: page - 1, pageSize: limit })
+    table.setPageIndex(pageFromUrl - 1)
+    table.setPageSize(limitFromUrl)
     table.getColumn('username')?.setFilterValue(search || undefined)
     table
       .getColumn('handledByUsername')
@@ -359,7 +353,8 @@ const TransactionTable = ({
       ?.setFilterValue(filterSource.length ? filterSource : undefined)
 
     if (inputRef.current) inputRef.current.value = search
-  }, [searchParams, table])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   type Option<T = string> = {
     value: string
@@ -429,7 +424,7 @@ const TransactionTable = ({
               table
                 .getColumn('handledByUsername')
                 ?.setFilterValue(e.target.value)
-              debouncedUpdateUrl({ search: e.target.value, page: 1 })
+              debouncedUpdateUrl({ searchAdmin: e.target.value, page: 1 })
             }}
             className="max-w-60 h-[38px]"
           />
