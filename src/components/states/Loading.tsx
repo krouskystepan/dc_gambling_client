@@ -2,7 +2,7 @@ import { Loader2 } from 'lucide-react'
 
 const LoadingScreen = () => {
   return (
-    <div className="h-screen flex flex-col items-center justify-center gap-3 text-center px-6">
+    <div className="h-full w-full flex flex-col items-center justify-center gap-3 text-center px-6">
       <Loader2 className="w-12 h-12 text-yellow-400 animate-spin drop-shadow-lg" />
 
       <h1 className="text-4xl font-extrabold bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300 bg-clip-text text-transparent animate-gradient-x">

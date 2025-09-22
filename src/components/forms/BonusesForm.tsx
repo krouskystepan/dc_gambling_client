@@ -83,39 +83,78 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
     rewardMode = 'linear',
   } = watched ?? {}
 
-  const preview: { day: number; reward: number }[] = []
+  // ---------------------------
+  // PREVIEW (opravená simulace)
+  // ---------------------------
+  const preview: {
+    day: number
+    reward: number
+    base: number
+    weekly: number
+    monthly: number
+  }[] = []
+
+  // parse once
+  const base = Number(baseReward)
+  const inc = Number(streakIncrement)
+  const mult = Number(streakMultiplier)
+  const max = Number(maxReward)
+  const weeklyMilestone = Number(milestoneWeekly)
+  const monthlyMilestone = Number(milestoneMonthly)
+
+  // simStreak reprezentuje "streak index" (1 = first day of streak)
+  let simStreak = 1
 
   for (let i = 1; i <= 90; i++) {
+    // vypočti reward podle aktuálního simStreak
     let reward = 0
-
-    const base = Number(baseReward)
-    const inc = Number(streakIncrement)
-    const mult = Number(streakMultiplier)
-    const max = Number(maxReward)
-    const weeklyMilestone = Number(milestoneWeekly)
-    const monthlyMilestone = Number(milestoneMonthly)
-
     if (rewardMode === 'linear') {
-      reward = base + (i - 1) * inc
-      if (max > 0 && reward > max) {
-        reward = resetOnMax ? base : max
-      }
+      reward = base + (simStreak - 1) * inc
+    } else {
+      // exponential
+      reward = base * Math.pow(mult, simStreak - 1)
     }
 
-    if (rewardMode === 'exponential') {
-      reward = base * Math.pow(mult, i - 1)
-      if (max > 0 && reward > max) {
-        reward = resetOnMax ? base : max
-      }
-    }
-
-    // milestones
+    // milestoney se vážou na simStreak (tedy na streak, ne na absolutní den i)
     let milestone = 0
-    if (i % 7 === 0) milestone += weeklyMilestone
-    if (i % 28 === 0) milestone += monthlyMilestone // changed from 30 to 28
+    const isWeeklyMilestone = simStreak % 7 === 0
+    const isMonthlyMilestone = simStreak % 28 === 0
+    if (isWeeklyMilestone) milestone += weeklyMilestone
+    if (isMonthlyMilestone) milestone += monthlyMilestone
 
-    preview.push({ day: i, reward: reward + milestone })
+    // pokud je max nastavené a reward přesahuje max
+    if (max > 0 && reward > max) {
+      if (resetOnMax) {
+        // reset na base: tento den dostane base (plus případné milestoney podle toho jak to chceš)
+        reward = base
+        // restartujeme simStreak — další den začne jako day 2 (po inkrementě níže)
+        simStreak = 1
+      } else {
+        // capni na max (streak pro další dny pokračuje, ale hodnota je limitovaná)
+        reward = max
+        // simStreak zůstane (pokračuje) — to zajistí, že milestoney se spočítají za rostoucí streak
+      }
+    }
+
+    const total = Number((reward + milestone).toFixed(2))
+    const baseOnly = Number(reward.toFixed(2))
+    const weeklyOnly = isWeeklyMilestone ? weeklyMilestone : 0
+    const monthlyOnly = isMonthlyMilestone ? monthlyMilestone : 0
+
+    preview.push({
+      day: i,
+      reward: total,
+      base: baseOnly,
+      weekly: weeklyOnly,
+      monthly: monthlyOnly,
+    })
+
+    // nakonec inkrementuj simStreak pro další den
+    simStreak++
   }
+
+  // --------------------------- end preview
+  // ---------------------------
 
   if (loading) return <LoadingScreen />
 
@@ -233,7 +272,7 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
                         className="bg-muted border-transparent shadow-none"
                         type="text"
                         onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, '')
+                          const value = e.target.value.replace(/[^0-9.]/g, '')
                           field.onChange(Number(value))
                         }}
                         value={field.value}
@@ -315,15 +354,18 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
             </h5>
             <div className="grid grid-cols-3 gap-4 max-h-[540px] overflow-y-auto hide-scrollbar">
               {preview.map((p) => {
-                const weekly = p.day % 7 === 0 ? milestoneWeekly : 0
-                const monthly = p.day % 28 === 0 ? milestoneMonthly : 0
-                const base = p.reward - weekly - monthly
+                const weekly = p.weekly
+                const monthly = p.monthly
+                const baseOnly = p.base
                 const total = p.reward
+                const isResetRow = false
 
                 return (
                   <div
                     key={p.day}
-                    className="flex flex-col p-2 border-b border-gray-700"
+                    className={`flex flex-col p-2 border-b border-gray-700 ${
+                      isResetRow ? 'bg-red-900/20 rounded-lg' : ''
+                    }`}
                   >
                     <div className="flex justify-between">
                       <span className="text-yellow-400">Day #{p.day}</span>
@@ -333,7 +375,7 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
                     </div>
                     <div className="flex gap-2 text-xs">
                       <span className="text-gray-300">
-                        B: {formatNumberToReadableString(base)}
+                        B: {formatNumberToReadableString(baseOnly)}
                       </span>
                       {weekly > 0 && (
                         <span className="text-blue-400 font-medium">
