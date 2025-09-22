@@ -83,9 +83,6 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
     rewardMode = 'linear',
   } = watched ?? {}
 
-  // ---------------------------
-  // PREVIEW (opravená simulace)
-  // ---------------------------
   const preview: {
     day: number
     reward: number
@@ -94,7 +91,6 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
     monthly: number
   }[] = []
 
-  // parse once
   const base = Number(baseReward)
   const inc = Number(streakIncrement)
   const mult = Number(streakMultiplier)
@@ -102,37 +98,28 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
   const weeklyMilestone = Number(milestoneWeekly)
   const monthlyMilestone = Number(milestoneMonthly)
 
-  // simStreak reprezentuje "streak index" (1 = first day of streak)
-  let simStreak = 1
+  let simRewardStreak = 1
 
   for (let i = 1; i <= 90; i++) {
-    // vypočti reward podle aktuálního simStreak
     let reward = 0
     if (rewardMode === 'linear') {
-      reward = base + (simStreak - 1) * inc
+      reward = base + (simRewardStreak - 1) * inc
     } else {
-      // exponential
-      reward = base * Math.pow(mult, simStreak - 1)
+      reward = base * Math.pow(mult, simRewardStreak - 1)
     }
 
-    // milestoney se vážou na simStreak (tedy na streak, ne na absolutní den i)
+    const isWeeklyMilestone = i % 7 === 0
+    const isMonthlyMilestone = i % 28 === 0
     let milestone = 0
-    const isWeeklyMilestone = simStreak % 7 === 0
-    const isMonthlyMilestone = simStreak % 28 === 0
     if (isWeeklyMilestone) milestone += weeklyMilestone
     if (isMonthlyMilestone) milestone += monthlyMilestone
 
-    // pokud je max nastavené a reward přesahuje max
     if (max > 0 && reward > max) {
       if (resetOnMax) {
-        // reset na base: tento den dostane base (plus případné milestoney podle toho jak to chceš)
-        reward = base
-        // restartujeme simStreak — další den začne jako day 2 (po inkrementě níže)
-        simStreak = 1
+        reward = rewardMode === 'linear' ? base : base
+        simRewardStreak = 1
       } else {
-        // capni na max (streak pro další dny pokračuje, ale hodnota je limitovaná)
         reward = max
-        // simStreak zůstane (pokračuje) — to zajistí, že milestoney se spočítají za rostoucí streak
       }
     }
 
@@ -149,12 +136,8 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
       monthly: monthlyOnly,
     })
 
-    // nakonec inkrementuj simStreak pro další den
-    simStreak++
+    simRewardStreak++
   }
-
-  // --------------------------- end preview
-  // ---------------------------
 
   if (loading) return <LoadingScreen />
 
