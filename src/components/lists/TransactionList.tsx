@@ -46,7 +46,9 @@ const TransactionList = async ({
     guildId,
     session,
     filterType?.length ? filterType : undefined,
-    filterSource?.length ? filterSource : undefined
+    filterSource?.length ? filterSource : undefined,
+    searchParams?.search || undefined,
+    searchParams?.searchAdmin || undefined
   )
 
   return (

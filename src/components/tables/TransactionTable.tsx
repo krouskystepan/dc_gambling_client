@@ -62,6 +62,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Checkbox } from '../ui/checkbox'
+import { Skeleton } from '../ui/skeleton'
 
 interface TransactionTableProps {
   transactions: ITransaction[]
@@ -610,13 +611,13 @@ const TransactionTable = ({
             variant="secondary"
             onClick={() => {
               setIsLoading(true)
-              const url = new URL(window.location.href)
-              router.replace(url.pathname + url.search, { scroll: false })
+              router.refresh()
             }}
             disabled={isLoading}
-            className="h-full"
           >
-            <RefreshCcw size={16} /> Refresh
+            <RefreshCcw
+              className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+            />
           </Button>
         </div>
       </div>
@@ -658,14 +659,20 @@ const TransactionTable = ({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center py-6"
-                >
-                  Loading...
-                </TableCell>
-              </TableRow>
+              Array.from({
+                length: table.getState().pagination.pageSize,
+              }).map((_, i) => (
+                <TableRow key={i} className="h-16">
+                  {table.getHeaderGroups()[0]?.headers.map((header, j) => (
+                    <TableCell key={j}>
+                      <Skeleton
+                        className="h-4"
+                        style={{ width: `${header.getSize()}px` }}
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>

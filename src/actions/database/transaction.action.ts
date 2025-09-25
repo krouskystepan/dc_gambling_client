@@ -154,9 +154,11 @@ export const getTransactionCounts = async (
   guildId: string,
   session: Session,
   filterType?: string[],
-  filterSource?: string[]
+  filterSource?: string[],
+  search?: string,
+  searchAdmin?: string
 ): Promise<ITransactionCounts> => {
-  if (!session.accessToken)
+  if (!session.accessToken) {
     return {
       type: Object.fromEntries(
         Object.keys(typeBadgeMap).map((t) => [t, 0])
@@ -165,24 +167,40 @@ export const getTransactionCounts = async (
         Object.keys(sourceBadgeMap).map((s) => [s, 0])
       ) as Record<TransactionDoc['source'], number>,
     }
+  }
 
   await connectToDatabase()
 
-  const baseQuery: FilterQuery<TransactionDoc> = { guildId }
+  const query: FilterQuery<TransactionDoc> = { guildId }
+  const andFilters: FilterQuery<TransactionDoc>[] = []
 
-  if (filterType && filterType.length)
-    baseQuery.type = { $in: filterType as TransactionDoc['type'][] }
+  if (search) {
+    const regex = new RegExp(search, 'i')
+    andFilters.push({ userId: regex })
+  }
 
-  if (filterSource && filterSource.length)
-    baseQuery.source = { $in: filterSource as TransactionDoc['source'][] }
+  if (searchAdmin) {
+    const regex = new RegExp(searchAdmin, 'i')
+    andFilters.push({ $or: [{ handledBy: regex }, { betId: regex }] })
+  }
+
+  if (filterType && filterType.length) {
+    andFilters.push({ type: { $in: filterType } })
+  }
+
+  if (filterSource && filterSource.length) {
+    andFilters.push({ source: { $in: filterSource } })
+  }
+
+  if (andFilters.length > 0) query.$and = andFilters
 
   const typeAgg = await Transaction.aggregate([
-    { $match: baseQuery },
+    { $match: query },
     { $group: { _id: '$type', count: { $sum: 1 } } },
   ])
 
   const sourceAgg = await Transaction.aggregate([
-    { $match: baseQuery },
+    { $match: query },
     { $group: { _id: '$source', count: { $sum: 1 } } },
   ])
 
