@@ -611,7 +611,8 @@ const TransactionTable = ({
             variant="secondary"
             onClick={() => {
               setIsLoading(true)
-              router.refresh()
+              const url = new URL(window.location.href)
+              router.replace(url.pathname + url.search, { scroll: false })
             }}
             disabled={isLoading}
           >
