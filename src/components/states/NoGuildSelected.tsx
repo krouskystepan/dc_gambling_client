@@ -2,7 +2,7 @@ import { Sparkles } from 'lucide-react'
 
 const NoGuildSelected = () => {
   return (
-    <div className="h-screen flex flex-1 flex-col items-center justify-center gap-4 text-center px-6">
+    <div className="size-full flex flex-1 flex-col items-center justify-center gap-4 text-center px-6">
       <Sparkles className="w-12 h-12 text-yellow-400 animate-spin-slower drop-shadow-lg" />
 
       <h1 className="text-4xl font-extrabold bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300 bg-clip-text text-transparent animate-gradient-x">

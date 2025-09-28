@@ -4,7 +4,7 @@ import { Button } from '../ui/button'
 
 const NotFoundBox = () => {
   return (
-    <div className="h-screen flex flex-1 flex-col items-center justify-center gap-4 text-center px-6">
+    <div className="size-full flex flex-1 flex-col items-center justify-center gap-4 text-center px-6">
       <AlertCircle className="w-12 h-12 text-red-500 animate-spin-slower drop-shadow-lg" />
 
       <h1 className="text-4xl font-extrabold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent animate-gradient-x">
