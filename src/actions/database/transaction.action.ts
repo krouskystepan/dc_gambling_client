@@ -98,7 +98,7 @@ export const getTransactions = async (
         {
           username: m.username,
           nickname: m.nickname,
-          avatar: m.avatarUrl || '/default-avatar.png',
+          avatar: m.avatarUrl || '/default-avatar.jpg',
         },
       ])
   )
@@ -107,12 +107,14 @@ export const getTransactions = async (
     const user = discordMap.get(tx.userId)
     const handler = tx.handledBy ? discordMap.get(tx.handledBy) : null
 
+    console.log(user?.avatar)
+
     return {
       id: tx._id.toString(),
       userId: tx.userId,
       username: user?.username || 'Unknown',
       nickname: user?.nickname || null,
-      avatar: user?.avatar || '/default-avatar.png',
+      avatar: user?.avatar || '/default-avatar.jpg',
       type: tx.type,
       meta: tx.meta,
       amount: tx.amount,

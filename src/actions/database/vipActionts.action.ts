@@ -37,7 +37,7 @@ export async function getVips(
       createdAt: vip.createdAt,
       username: member?.username || 'Unknown',
       nickname: member?.nickname || '',
-      avatar: member?.avatarUrl || '/default-avatar.png',
+      avatar: member?.avatarUrl || '/default-avatar.jpg',
     }
   })
 }

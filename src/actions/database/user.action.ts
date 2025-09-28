@@ -237,7 +237,7 @@ export async function getUserWithRegistrationStatus(
       userId,
       username: discordMember?.username || 'Unknown',
       nickname: discordMember?.nickname || null,
-      avatar: discordMember?.avatarUrl || '/default-avatar.png',
+      avatar: discordMember?.avatarUrl || '/default-avatar.jpg',
       registered: !!dbUser,
       registeredAt: dbUser?.createdAt || null,
       balance: dbUser?.balance || 0,
