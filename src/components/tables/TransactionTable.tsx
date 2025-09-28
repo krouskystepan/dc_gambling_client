@@ -156,28 +156,47 @@ const TransactionTable = ({
     {
       header: 'Type',
       accessorKey: 'type',
+      enableSorting: false,
       size: 80,
       cell: ({ row }) => {
         const type = row.getValue('type') as TransactionDoc['type']
-
         const className = typeBadgeMap[type] ?? 'bg-gray-600'
 
+        const meta = row.original.meta ?? {}
+
+        const metaFormatters: Record<string, (value: unknown) => string> = {
+          action: (value) => `Action: ${value}`,
+          durationDays: (value) => `Duration: ${value} days`,
+          adminAction: (value) => `Action: admin ${value}`,
+          bonusStreak: (value) => `Streak: ${value} days`,
+        }
+
+        const hasMeta = Object.keys(meta).length > 0
+
         return (
-          <div className="flex gap-1 justify-start items-center">
+          <div className="flex gap-1 justify-start items-center select-none">
             <Badge className={`${className} px-2`}>{type.toUpperCase()}</Badge>
-            {type === 'vip' ? (
+
+            {hasMeta && (
               <Tooltip>
                 <TooltipTrigger className="text-gray-400">
                   <CircleQuestionMark size={16} />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Action: {row.original.meta?.['action'] as string}</p>
-                  <p>
-                    For {row.original.meta?.['durationDays'] as string} Days
-                  </p>
+                  {Object.entries(meta).map(([key, value]) => {
+                    const formatter = metaFormatters[key]
+                    if (formatter) return <p key={key}>{formatter(value)}</p>
+
+                    return (
+                      <p key={key}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)}:{' '}
+                        {String(value)}
+                      </p>
+                    )
+                  })}
                 </TooltipContent>
               </Tooltip>
-            ) : null}
+            )}
           </div>
         )
       },
@@ -191,8 +210,46 @@ const TransactionTable = ({
         `$${formatNumberToReadableString(row.getValue('amount'))}`,
     },
     {
-      header: 'Source',
+      header: () => (
+        <div className="flex items-center gap-1">
+          <span>Source</span>
+          <Tooltip>
+            <TooltipTrigger className="text-gray-400">
+              <CircleQuestionMark size={16} />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-md break-normal space-y-2 p-2">
+              <p>Source: Indicates who or what initiated the transaction.</p>
+              <ul className="list-disc pl-5 space-y-1 mb-0">
+                <li>
+                  <span className="font-semibold">system</span> - Action
+                  triggered automatically by the system on behalf of a user
+                  (e.g., user buying or extending VIP via /vip buy or /vip
+                  extend).
+                </li>
+                <li>
+                  <span className="font-semibold">command</span> - Action
+                  initiated manually by an admin using a command (e.g., gifting
+                  VIP to a user).
+                </li>
+                <li>
+                  <span className="font-semibold">manual</span> - Action entered
+                  directly by an admin in the interface.
+                </li>
+                <li>
+                  <span className="font-semibold">web</span> - Action performed
+                  by the admin via the web interface.
+                </li>
+                <li>
+                  <span className="font-semibold">casino</span> - Action
+                  triggered by the casino system (bets, wins, refunds, etc.).
+                </li>
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      ),
       accessorKey: 'source',
+      enableSorting: false,
       size: 80,
       cell: ({ row }) => {
         const source = row.getValue('source') as TransactionDoc['source']
@@ -200,7 +257,9 @@ const TransactionTable = ({
         const className = sourceBadgeMap[source] ?? 'bg-gray-600'
 
         return (
-          <Badge className={`${className} px-2`}>{source.toUpperCase()}</Badge>
+          <Badge className={`${className} px-2 select-none`}>
+            {source.toUpperCase()}
+          </Badge>
         )
       },
     },
