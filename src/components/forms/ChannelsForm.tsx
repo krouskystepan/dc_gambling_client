@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from '../ui/form'
 import { Label } from '../ui/label'
-import { GuildChannel } from '@/types/types'
+import { IGuildChannel, TChannelsFormValues } from '@/types/types'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
@@ -39,10 +39,8 @@ const channelsFormSchema = z.object({
   prediction: predictionChannelsFormSchema,
 })
 
-type ChannelsFormValues = z.infer<typeof channelsFormSchema>
-
 const ChannelsForm = ({ guildId }: { guildId: string }) => {
-  const form = useForm<ChannelsFormValues>({
+  const form = useForm<TChannelsFormValues>({
     resolver: zodResolver(channelsFormSchema),
     defaultValues: {
       atm: { actions: '', logs: '' },
@@ -51,7 +49,7 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
     },
   })
 
-  const [channels, setChannels] = useState<GuildChannel[]>([])
+  const [channels, setChannels] = useState<IGuildChannel[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -83,7 +81,7 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
     fetchData()
   }, [guildId, form])
 
-  const onSubmit = async (values: ChannelsFormValues) => {
+  const onSubmit = async (values: TChannelsFormValues) => {
     const toastId = toast.loading('Saving...')
 
     try {

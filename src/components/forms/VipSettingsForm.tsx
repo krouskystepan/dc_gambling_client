@@ -8,7 +8,7 @@ import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
-import { GuildRole, GuildChannel, VipSettingsValues } from '@/types/types'
+import { IGuildRole, IGuildChannel, TVipSettingsValues } from '@/types/types'
 import {
   Select,
   SelectContent,
@@ -26,7 +26,7 @@ import { getGuildCategories } from '@/actions/discord/category.action'
 import { getGuildRoles } from '@/actions/discord/role.action'
 
 const VipSettingsForm = ({ guildId }: { guildId: string }) => {
-  const form = useForm<VipSettingsValues>({
+  const form = useForm<TVipSettingsValues>({
     resolver: zodResolver(vipSettingsFormSchema),
     defaultValues: {
       roleId: '',
@@ -36,8 +36,8 @@ const VipSettingsForm = ({ guildId }: { guildId: string }) => {
     },
   })
 
-  const [roles, setRoles] = useState<GuildRole[]>([])
-  const [categories, setCategories] = useState<GuildChannel[]>([])
+  const [roles, setRoles] = useState<IGuildRole[]>([])
+  const [categories, setCategories] = useState<IGuildChannel[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -68,7 +68,7 @@ const VipSettingsForm = ({ guildId }: { guildId: string }) => {
     fetchData()
   }, [guildId, form])
 
-  const onSubmit = async (values: VipSettingsValues) => {
+  const onSubmit = async (values: TVipSettingsValues) => {
     const toastId = toast.loading('Saving VIP settings...')
     try {
       await saveVipSettings(guildId, values)

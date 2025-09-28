@@ -40,7 +40,7 @@ import {
   PaginationItem,
 } from '@/components/ui/pagination'
 import { cn, formatNumberToReadableString } from '@/lib/utils'
-import { GuildMemberStatus } from '@/types/types'
+import { TGuildMemberStatus } from '@/types/types'
 import Image from 'next/image'
 import {
   DropdownMenu,
@@ -82,13 +82,13 @@ import { Badge } from '../ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 interface UserTableProps {
-  users: GuildMemberStatus[]
+  users: TGuildMemberStatus[]
   guildId: string
   managerId: string
 }
 
 const multiColumnFilter = (
-  row: Row<GuildMemberStatus>,
+  row: Row<TGuildMemberStatus>,
   columnId: string,
   filterValue: string
 ) => {
@@ -112,7 +112,7 @@ const UserTable = ({ users, guildId, managerId }: UserTableProps) => {
   ])
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const columns: ColumnDef<GuildMemberStatus>[] = [
+  const columns: ColumnDef<TGuildMemberStatus>[] = [
     {
       header: 'Avatar',
       accessorKey: 'avatar',
@@ -450,10 +450,10 @@ function RowActions({
   managerId,
   setData,
 }: {
-  row: Row<GuildMemberStatus>
+  row: Row<TGuildMemberStatus>
   guildId: string
   managerId: string
-  setData: React.Dispatch<React.SetStateAction<GuildMemberStatus[]>>
+  setData: React.Dispatch<React.SetStateAction<TGuildMemberStatus[]>>
 }) {
   const [dropdownStates, setDropdownStates] = useState<Record<string, boolean>>(
     {}

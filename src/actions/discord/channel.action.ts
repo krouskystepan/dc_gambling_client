@@ -1,18 +1,13 @@
 'use server'
 
-import { GuildChannel } from '@/types/types'
+import { IChannelsCacheEntry, IGuildChannel } from '@/types/types'
 import axios from 'axios'
 
-type CachedGuildChannels = {
-  data: GuildChannel[]
-  expiresAt: number
-}
-
-const guildChannelsCache = new Map<string, CachedGuildChannels>()
+const guildChannelsCache = new Map<string, IChannelsCacheEntry>()
 
 export const getGuildChannels = async (
   guildId: string
-): Promise<GuildChannel[]> => {
+): Promise<IGuildChannel[]> => {
   const now = Date.now()
   const cached = guildChannelsCache.get(guildId)
 
@@ -23,7 +18,7 @@ export const getGuildChannels = async (
   if (!process.env.DISCORD_BOT_TOKEN) throw new Error('Bot token missing')
 
   try {
-    const { data } = await axios.get<GuildChannel[]>(
+    const { data } = await axios.get<IGuildChannel[]>(
       `https://discord.com/api/v10/guilds/${guildId}/channels`,
       {
         headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` },

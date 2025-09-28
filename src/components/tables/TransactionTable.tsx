@@ -49,10 +49,6 @@ import {
 } from 'lucide-react'
 import { formatNumberToReadableString } from '@/lib/utils'
 import Image from 'next/image'
-import {
-  ITransaction,
-  ITransactionCounts,
-} from '@/actions/database/transaction.action'
 import { TransactionDoc } from '@/models/Transaction'
 import { Badge } from '../ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
@@ -63,6 +59,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Checkbox } from '../ui/checkbox'
 import { Skeleton } from '../ui/skeleton'
+import { ITransaction, ITransactionCounts } from '@/types/types'
 
 interface TransactionTableProps {
   transactions: ITransaction[]

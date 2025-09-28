@@ -4,13 +4,13 @@ import { authOptions } from '@/lib/authOptions'
 import { connectToDatabase } from '@/lib/utils'
 import GuildConfiguration from '@/models/GuildConfiguration'
 import { casinoSettingsSchema } from '@/types/schemas'
-import { CasinoSettingsValues } from '@/types/types'
 import { getServerSession } from 'next-auth'
 import { getUserPermissions } from '../perms'
+import { TCasinoSettingsValues } from '@/types/types'
 
 export async function getCasinoSettings(
   guildId: string
-): Promise<CasinoSettingsValues | null> {
+): Promise<TCasinoSettingsValues | null> {
   await connectToDatabase()
 
   const doc = await GuildConfiguration.findOne({ guildId })
@@ -21,7 +21,7 @@ export async function getCasinoSettings(
 
 export async function saveCasinoSettings(
   guildId: string,
-  values: CasinoSettingsValues
+  values: TCasinoSettingsValues
 ) {
   const session = await getServerSession(authOptions)
   const { isAdmin } = await getUserPermissions(guildId, session)

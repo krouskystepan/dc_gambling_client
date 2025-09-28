@@ -2,7 +2,7 @@
 
 import { connectToDatabase } from '@/lib/utils'
 import VipRoom from '@/models/VipRoom'
-import { VipChannels } from '@/types/types'
+import { TVipChannels } from '@/types/types'
 import { Session } from 'next-auth'
 import { getGuildChannels } from '../discord/channel.action'
 import { getDiscordGuildMembers } from '../discord/member.action'
@@ -10,7 +10,7 @@ import { getDiscordGuildMembers } from '../discord/member.action'
 export async function getVips(
   guildId: string,
   session: Session
-): Promise<VipChannels[]> {
+): Promise<TVipChannels[]> {
   if (!session || !session.accessToken) return []
 
   await connectToDatabase()

@@ -5,11 +5,11 @@ import { connectToDatabase } from '@/lib/utils'
 import GuildConfiguration from '@/models/GuildConfiguration'
 import { getServerSession } from 'next-auth'
 import { getUserPermissions } from '../perms'
-import { BonusFormValues } from '@/types/types'
+import { TBonusFormValues } from '@/types/types'
 
 export async function getBonusSettings(
   guildId: string
-): Promise<BonusFormValues | null> {
+): Promise<TBonusFormValues | null> {
   await connectToDatabase()
 
   const doc = await GuildConfiguration.findOne({ guildId })
@@ -33,7 +33,7 @@ export async function getBonusSettings(
 
 export async function saveBonusSettings(
   guildId: string,
-  values: BonusFormValues
+  values: TBonusFormValues
 ) {
   const session = await getServerSession(authOptions)
   const { isAdmin } = await getUserPermissions(guildId, session)

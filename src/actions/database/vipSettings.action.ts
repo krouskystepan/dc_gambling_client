@@ -3,13 +3,13 @@
 import { authOptions } from '@/lib/authOptions'
 import { connectToDatabase } from '@/lib/utils'
 import GuildConfiguration from '@/models/GuildConfiguration'
-import { VipSettingsValues } from '@/types/types'
+import { TVipSettingsValues } from '@/types/types'
 import { getServerSession } from 'next-auth'
 import { getUserPermissions } from '../perms'
 
 export async function getVipSettings(
   guildId: string
-): Promise<VipSettingsValues | null> {
+): Promise<TVipSettingsValues | null> {
   await connectToDatabase()
 
   const doc = await GuildConfiguration.findOne({ guildId })
@@ -25,7 +25,7 @@ export async function getVipSettings(
 
 export async function saveVipSettings(
   guildId: string,
-  values: VipSettingsValues
+  values: TVipSettingsValues
 ) {
   const session = await getServerSession(authOptions)
   const { isAdmin } = await getUserPermissions(guildId, session)

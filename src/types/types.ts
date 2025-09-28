@@ -6,8 +6,9 @@ import {
   managerRoleFormSchema,
   vipSettingsFormSchema,
 } from './schemas'
+import { TransactionDoc } from '@/models/Transaction'
 
-export interface DiscordGuild {
+export interface IGuild {
   id: string
   name: string
   icon: string | null
@@ -15,13 +16,13 @@ export interface DiscordGuild {
   permissions: number
 }
 
-export interface GuildChannel {
+export interface IGuildChannel {
   id: string
   name: string
   type: number
 }
 
-export interface GuildRole {
+export interface IGuildRole {
   id: string
   name: string
   color: number
@@ -32,13 +33,13 @@ export interface GuildRole {
   permissions: string
 }
 
-export type ChannelsFormValues = z.infer<typeof channelsFormSchema>
-export type CasinoSettingsValues = z.infer<typeof casinoSettingsSchema>
-export type ManagerRoleValues = z.infer<typeof managerRoleFormSchema>
-export type VipSettingsValues = z.infer<typeof vipSettingsFormSchema>
-export type BonusFormValues = z.infer<typeof bonusFormSchema>
+export type TChannelsFormValues = z.infer<typeof channelsFormSchema>
+export type TCasinoSettingsValues = z.infer<typeof casinoSettingsSchema>
+export type TManagerRoleValues = z.infer<typeof managerRoleFormSchema>
+export type TVipSettingsValues = z.infer<typeof vipSettingsFormSchema>
+export type TBonusFormValues = z.infer<typeof bonusFormSchema>
 
-export type GuildMemberStatus = {
+export type TGuildMemberStatus = {
   userId: string
   username: string
   nickname: string | null
@@ -49,7 +50,7 @@ export type GuildMemberStatus = {
   netProfit?: number
 }
 
-export type VipChannels = {
+export type TVipChannels = {
   userId: string
   guildId: string
   channelId: string
@@ -59,4 +60,44 @@ export type VipChannels = {
   username: string
   nickname: string
   avatar: string
+}
+
+export interface ITransaction
+  extends Pick<
+    TransactionDoc,
+    | 'id'
+    | 'userId'
+    | 'type'
+    | 'amount'
+    | 'source'
+    | 'createdAt'
+    | 'betId'
+    | 'handledBy'
+    | 'meta'
+  > {
+  username: string
+  nickname: string | null
+  avatar: string
+  handledByUsername?: string | null
+}
+
+export interface ITransactionCounts {
+  type: Record<TransactionDoc['type'], number>
+  source: Record<TransactionDoc['source'], number>
+}
+
+// Cache
+export interface ICacheEntry<T> {
+  data: T
+  expiresAt: number
+}
+
+export interface IMemberCacheEntry {
+  roles: string[]
+  expiresAt: number
+}
+
+export interface IChannelsCacheEntry {
+  data: IGuildChannel[]
+  expiresAt: number
 }

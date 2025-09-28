@@ -1,14 +1,9 @@
 'use server'
 
-import { GuildRole } from '@/types/types'
+import { IGuildRole, IMemberCacheEntry } from '@/types/types'
 import axios from 'axios'
 
-interface MemberCacheEntry {
-  roles: string[]
-  expiresAt: number
-}
-
-const memberCache = new Map<string, MemberCacheEntry>()
+const memberCache = new Map<string, IMemberCacheEntry>()
 
 export async function fetchMemberRoles(guildId: string, userId: string) {
   const cacheKey = `${guildId}:${userId}`
@@ -28,10 +23,10 @@ export async function fetchMemberRoles(guildId: string, userId: string) {
   return data.roles
 }
 
-export async function getGuildRoles(guildId: string): Promise<GuildRole[]> {
+export async function getGuildRoles(guildId: string): Promise<IGuildRole[]> {
   if (!process.env.DISCORD_BOT_TOKEN) throw new Error('Bot token missing')
   try {
-    const { data } = await axios.get<GuildRole[]>(
+    const { data } = await axios.get<IGuildRole[]>(
       `https://discord.com/api/v10/guilds/${guildId}/roles`,
       { headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` } }
     )

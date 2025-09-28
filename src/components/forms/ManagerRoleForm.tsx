@@ -8,7 +8,7 @@ import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
 import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
-import { GuildRole, ManagerRoleValues } from '@/types/types'
+import { IGuildRole, TManagerRoleValues } from '@/types/types'
 import {
   Select,
   SelectContent,
@@ -24,14 +24,14 @@ import {
 import { getGuildRoles } from '@/actions/discord/role.action'
 
 const ManagerRoleForm = ({ guildId }: { guildId: string }) => {
-  const form = useForm<ManagerRoleValues>({
+  const form = useForm<TManagerRoleValues>({
     resolver: zodResolver(managerRoleFormSchema),
     defaultValues: {
       managerRoleId: '',
     },
   })
 
-  const [roles, setRoles] = useState<GuildRole[]>([])
+  const [roles, setRoles] = useState<IGuildRole[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const ManagerRoleForm = ({ guildId }: { guildId: string }) => {
     fetchData()
   }, [guildId, form])
 
-  const onSubmit = async (values: ManagerRoleValues) => {
+  const onSubmit = async (values: TManagerRoleValues) => {
     const toastId = toast.loading('Saving...')
     try {
       await saveManagerRole(guildId, values.managerRoleId)

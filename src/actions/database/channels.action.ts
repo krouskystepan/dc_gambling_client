@@ -3,13 +3,13 @@
 import { authOptions } from '@/lib/authOptions'
 import { connectToDatabase } from '@/lib/utils'
 import GuildConfiguration from '@/models/GuildConfiguration'
-import { ChannelsFormValues } from '@/types/types'
+import { TChannelsFormValues } from '@/types/types'
 import { getServerSession } from 'next-auth'
 import { getUserPermissions } from '../perms'
 
 export async function getChannels(
   guildId: string
-): Promise<ChannelsFormValues | null> {
+): Promise<TChannelsFormValues | null> {
   await connectToDatabase()
 
   const doc = await GuildConfiguration.findOne({ guildId })
@@ -32,7 +32,7 @@ export async function getChannels(
 
 export async function saveChannels(
   guildId: string,
-  values: ChannelsFormValues
+  values: TChannelsFormValues
 ) {
   const session = await getServerSession(authOptions)
   const { isAdmin } = await getUserPermissions(guildId, session)

@@ -1,24 +1,17 @@
 'use server'
 
-import { DiscordGuild } from '@/types/types'
+import { ICacheEntry, IGuild } from '@/types/types'
 import axios from 'axios'
 import { Session } from 'next-auth'
 import { cache } from 'react'
 import { getAllGuildConfigsWithManagers } from '../database/guild.action'
 import { fetchMemberRoles } from './role.action'
 
-interface CacheEntry<T> {
-  data: T
-  expiresAt: number
-}
-
-const guildCache = new Map<string, CacheEntry<DiscordGuild[]>>()
+const guildCache = new Map<string, ICacheEntry<IGuild[]>>()
 
 const GUILD_CACHE_DURATION = 5 * 60_000
 
-export const fetchUserGuilds = async (
-  session: Session
-): Promise<DiscordGuild[]> => {
+export const fetchUserGuilds = async (session: Session): Promise<IGuild[]> => {
   if (!session.accessToken) return []
 
   const cacheKey = session.userId!
@@ -28,7 +21,7 @@ export const fetchUserGuilds = async (
   if (cached && cached.expiresAt > now) return cached.data
 
   try {
-    const { data } = await axios.get<DiscordGuild[]>(
+    const { data } = await axios.get<IGuild[]>(
       'https://discord.com/api/v10/users/@me/guilds',
       { headers: { Authorization: `Bearer ${session.accessToken}` } }
     )
@@ -46,7 +39,7 @@ export const fetchUserGuilds = async (
 }
 
 export const getUserGuilds = cache(
-  async (session: Session): Promise<DiscordGuild[]> => {
+  async (session: Session): Promise<IGuild[]> => {
     if (!session.userId) return []
 
     if (!process.env.DISCORD_BOT_TOKEN) throw new Error('Bot token missing')
@@ -55,7 +48,7 @@ export const getUserGuilds = cache(
 
     const allGuildConfigs = await getAllGuildConfigsWithManagers()
 
-    const accessibleGuilds: DiscordGuild[] = []
+    const accessibleGuilds: IGuild[] = []
 
     for (const guild of userGuilds) {
       let includeGuild = false

@@ -38,7 +38,7 @@ import {
   PaginationItem,
 } from '@/components/ui/pagination'
 // import { formatNumberToReadableString } from '@/lib/utils'
-import { VipChannels } from '@/types/types'
+import { TVipChannels } from '@/types/types'
 import Image from 'next/image'
 // import {
 //   DropdownMenu,
@@ -70,13 +70,13 @@ import Image from 'next/image'
 // } from './ui/dialog'
 
 interface VipTableProps {
-  vips: VipChannels[]
+  vips: TVipChannels[]
   guildId: string
   managerId: string
 }
 
 const multiColumnFilter = (
-  row: Row<VipChannels>,
+  row: Row<TVipChannels>,
   columnId: string,
   filterValue: string
 ) => {
@@ -99,7 +99,7 @@ const VipTable = ({ vips, guildId, managerId }: VipTableProps) => {
 
   console.log(data)
 
-  const columns: ColumnDef<VipChannels>[] = [
+  const columns: ColumnDef<TVipChannels>[] = [
     {
       header: 'Image',
       accessorKey: 'avatar',

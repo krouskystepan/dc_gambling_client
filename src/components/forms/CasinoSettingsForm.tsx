@@ -18,7 +18,7 @@ import defaultCasinoSettings, {
 import { calculateRTP } from '@/lib/utils'
 import { RotateCw, TriangleAlert } from 'lucide-react'
 import { Button } from '../ui/button'
-import { CasinoSettingsValues } from '@/types/types'
+import { TCasinoSettingsValues } from '@/types/types'
 import z from 'zod'
 import {
   getCasinoSettings,
@@ -33,7 +33,7 @@ const NestedFields = ({
   nestedKeys,
   form,
 }: {
-  game: keyof Pick<CasinoSettingsValues, 'slots' | 'lottery' | 'roulette'>
+  game: keyof Pick<TCasinoSettingsValues, 'slots' | 'lottery' | 'roulette'>
   settings: Record<string, unknown>
   nestedKeys: NestedGameKeys[]
   form: UseFormReturn<
@@ -64,7 +64,7 @@ const NestedFields = ({
                 key={symbol}
                 control={form.control}
                 name={
-                  `${game}.${nestedKey}.${symbol}` as Path<CasinoSettingsValues>
+                  `${game}.${nestedKey}.${symbol}` as Path<TCasinoSettingsValues>
                 }
                 render={({ field }) => (
                   <FormItem>
@@ -93,7 +93,7 @@ const NestedFields = ({
                           className="bg-muted text-destructive/60 inline-flex w-9 items-center justify-center rounded-none rounded-e-md text-sm outline-none focus:z-10 hover:text-destructive duration-200 transition-colors cursor-pointer"
                           onClick={() => {
                             const defaultGameSettings = defaultCasinoSettings[
-                              game as keyof CasinoSettingsValues
+                              game as keyof TCasinoSettingsValues
                             ] as Record<string, number>
 
                             const nestedDefault = defaultGameSettings[nestedKey]
@@ -154,7 +154,7 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
     fetchSettings()
   }, [guildId, form])
 
-  const onSubmit = async (values: CasinoSettingsValues) => {
+  const onSubmit = async (values: TCasinoSettingsValues) => {
     const toastId = toast.loading('Saving...')
     try {
       await saveCasinoSettings(guildId, values)
@@ -176,8 +176,8 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
         >
           {Object.entries(watchedValues).map(([game, settings]) => {
             const rtp = calculateRTP(
-              game as keyof CasinoSettingsValues,
-              settings as CasinoSettingsValues[keyof CasinoSettingsValues]
+              game as keyof TCasinoSettingsValues,
+              settings as TCasinoSettingsValues[keyof TCasinoSettingsValues]
             )
 
             return (
@@ -223,7 +223,7 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
                             key={key}
                             control={form.control}
                             name={
-                              `${game}.${key}` as Path<CasinoSettingsValues>
+                              `${game}.${key}` as Path<TCasinoSettingsValues>
                             }
                             render={({ field }) => (
                               <FormItem>
@@ -254,7 +254,7 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
                                       onClick={() => {
                                         const defaultValue = (
                                           defaultCasinoSettings[
-                                            game as keyof CasinoSettingsValues
+                                            game as keyof TCasinoSettingsValues
                                           ] as Record<
                                             string,
                                             number | Record<string, number>

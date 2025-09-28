@@ -16,7 +16,7 @@ import {
   saveBonusSettings,
 } from '@/actions/database/bonusSettings.action'
 import { bonusFormSchema } from '@/types/schemas'
-import { BonusFormValues } from '@/types/types'
+import { TBonusFormValues } from '@/types/types'
 import {
   Select,
   SelectContent,
@@ -26,7 +26,7 @@ import {
 } from '../ui/select'
 
 const BonusesForm = ({ guildId }: { guildId: string }) => {
-  const form = useForm<BonusFormValues>({
+  const form = useForm<TBonusFormValues>({
     resolver: zodResolver(bonusFormSchema),
     defaultValues: {
       rewardMode: 'linear',
@@ -58,7 +58,7 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
     fetchData()
   }, [guildId, form])
 
-  const onSubmit = async (values: BonusFormValues) => {
+  const onSubmit = async (values: TBonusFormValues) => {
     const toastId = toast.loading('Saving bonus settings...')
     try {
       await saveBonusSettings(guildId, values)

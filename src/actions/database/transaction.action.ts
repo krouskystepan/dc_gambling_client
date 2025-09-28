@@ -5,25 +5,7 @@ import Transaction, { TransactionDoc } from '@/models/Transaction'
 import { Session } from 'next-auth'
 import { getDiscordGuildMembers } from '../discord/member.action'
 import { FilterQuery } from 'mongoose'
-
-export interface ITransaction
-  extends Pick<
-    TransactionDoc,
-    | 'id'
-    | 'userId'
-    | 'type'
-    | 'amount'
-    | 'source'
-    | 'createdAt'
-    | 'betId'
-    | 'handledBy'
-    | 'meta'
-  > {
-  username: string
-  nickname: string | null
-  avatar: string
-  handledByUsername?: string | null
-}
+import { ITransaction, ITransactionCounts } from '@/types/types'
 
 export const getTransactions = async (
   guildId: string,
@@ -127,11 +109,6 @@ export const getTransactions = async (
   })
 
   return { transactions: transactionsWithUser, total }
-}
-
-export interface ITransactionCounts {
-  type: Record<TransactionDoc['type'], number>
-  source: Record<TransactionDoc['source'], number>
 }
 
 const typeBadgeMap: Record<TransactionDoc['type'], string> = {

@@ -6,7 +6,7 @@ import {
   LOTTERY_TOTAL_NUMBERS,
   MINI_NUMBERS,
 } from './defaultConfig'
-import { CasinoSettingsValues } from '@/types/types'
+import { TCasinoSettingsValues } from '@/types/types'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -33,8 +33,8 @@ const combination = (n: number, k: number): number => {
 }
 
 export const calculateRTP = (
-  game: keyof CasinoSettingsValues,
-  settings: CasinoSettingsValues[typeof game]
+  game: keyof TCasinoSettingsValues,
+  settings: TCasinoSettingsValues[typeof game]
 ): number | Record<string, number> => {
   const toNumber = (val: unknown): number => {
     if (typeof val === 'string') return parseFloat(val) || 0
@@ -44,18 +44,18 @@ export const calculateRTP = (
 
   switch (game) {
     case 'dice': {
-      const { winMultiplier } = settings as CasinoSettingsValues['dice']
+      const { winMultiplier } = settings as TCasinoSettingsValues['dice']
       return (1 / 6) * toNumber(winMultiplier) * 100
     }
 
     case 'coinflip': {
-      const { winMultiplier } = settings as CasinoSettingsValues['coinflip']
+      const { winMultiplier } = settings as TCasinoSettingsValues['coinflip']
       return 0.5 * toNumber(winMultiplier) * 100
     }
 
     case 'slots': {
       const { symbolWeights, winMultipliers } =
-        settings as CasinoSettingsValues['slots']
+        settings as TCasinoSettingsValues['slots']
 
       const totalWeight = Object.values(symbolWeights).reduce(
         (a, b) => a + toNumber(b),
@@ -74,7 +74,7 @@ export const calculateRTP = (
     }
 
     case 'lottery': {
-      const { winMultipliers } = settings as CasinoSettingsValues['lottery']
+      const { winMultipliers } = settings as TCasinoSettingsValues['lottery']
       const userPicks = LOTTERY_NUM_TO_DRAW
       const drawnNumbers = LOTTERY_NUM_TO_DRAW
 
@@ -94,7 +94,7 @@ export const calculateRTP = (
     }
 
     case 'roulette': {
-      const { winMultipliers } = settings as CasinoSettingsValues['roulette']
+      const { winMultipliers } = settings as TCasinoSettingsValues['roulette']
       const numbers = Object.keys(MINI_NUMBERS)
       const totalNumbers = numbers.length
       const greenCount = numbers.filter(
@@ -151,13 +151,13 @@ export const calculateRTP = (
     }
 
     case 'rps': {
-      const { casinoCut } = settings as CasinoSettingsValues['rps']
+      const { casinoCut } = settings as TCasinoSettingsValues['rps']
       return (1 - toNumber(casinoCut)) * 100
     }
 
     case 'goldenJackpot': {
       const { winMultiplier, oneInChance } =
-        settings as CasinoSettingsValues['goldenJackpot']
+        settings as TCasinoSettingsValues['goldenJackpot']
       return (toNumber(winMultiplier) / toNumber(oneInChance)) * 100
     }
 

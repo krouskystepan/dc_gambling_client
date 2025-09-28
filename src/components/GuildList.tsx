@@ -1,8 +1,8 @@
 'use client'
 
-import { DiscordGuild } from '@/types/types'
+import { IGuild } from '@/types/types'
 
-export default function GuildList({ guilds }: { guilds: DiscordGuild[] }) {
+export default function GuildList({ guilds }: { guilds: IGuild[] }) {
   return (
     <ul>
       {guilds.map((g) => (

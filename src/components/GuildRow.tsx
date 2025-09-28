@@ -1,11 +1,11 @@
 'use client'
 
-import { DiscordGuild } from '@/types/types'
+import { IGuild } from '@/types/types'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 
-const GuildRow = ({ guild }: { guild: DiscordGuild }) => {
+const GuildRow = ({ guild }: { guild: IGuild }) => {
   const pathname = usePathname()
 
   const activeGuildId = pathname.split('/')[3]

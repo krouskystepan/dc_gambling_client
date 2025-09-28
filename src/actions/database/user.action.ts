@@ -4,7 +4,7 @@ import GuildConfiguration from '@/models/GuildConfiguration'
 import { revalidatePath } from 'next/cache'
 import User from '@/models/User'
 import { connectToDatabase, formatNumberToReadableString } from '@/lib/utils'
-import { GuildMemberStatus } from '@/types/types'
+import { TGuildMemberStatus } from '@/types/types'
 import { Session } from 'next-auth'
 import { getDiscordGuildMembers } from '../discord/member.action'
 import { sendEmbed } from '../discord/utils.action'
@@ -191,7 +191,7 @@ export async function withdrawBalance(
 export async function getUserWithRegistrationStatus(
   guildId: string,
   session: Session | null
-): Promise<GuildMemberStatus[]> {
+): Promise<TGuildMemberStatus[]> {
   if (!session || !session.accessToken) return []
 
   await connectToDatabase()

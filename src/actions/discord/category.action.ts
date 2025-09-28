@@ -1,14 +1,14 @@
 'use server'
 
-import { GuildChannel } from '@/types/types'
+import { IGuildChannel } from '@/types/types'
 import axios from 'axios'
 
 export const getGuildCategories = async (
   guildId: string
-): Promise<GuildChannel[]> => {
+): Promise<IGuildChannel[]> => {
   if (!process.env.DISCORD_BOT_TOKEN) throw new Error('Bot token missing')
   try {
-    const { data } = await axios.get<GuildChannel[]>(
+    const { data } = await axios.get<IGuildChannel[]>(
       `https://discord.com/api/v10/guilds/${guildId}/channels`,
       { headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` } }
     )
