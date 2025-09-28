@@ -29,8 +29,6 @@ export async function saveCasinoSettings(
 
   const parsed = casinoSettingsSchema.parse(values)
 
-  console.log(parsed)
-
   await connectToDatabase()
 
   const updated = await GuildConfiguration.findOneAndUpdate(

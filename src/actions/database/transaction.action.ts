@@ -89,8 +89,6 @@ export const getTransactions = async (
     const user = discordMap.get(tx.userId)
     const handler = tx.handledBy ? discordMap.get(tx.handledBy) : null
 
-    console.log(user?.avatar)
-
     return {
       id: tx._id.toString(),
       userId: tx.userId,

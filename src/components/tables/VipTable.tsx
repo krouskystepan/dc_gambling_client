@@ -97,8 +97,6 @@ const VipTable = ({ vips, guildId, managerId }: VipTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([])
   const inputRef = useRef<HTMLInputElement>(null)
 
-  console.log(data)
-
   const columns: ColumnDef<TVipChannels>[] = [
     {
       header: 'Image',
