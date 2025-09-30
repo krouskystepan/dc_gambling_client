@@ -42,34 +42,7 @@ import {
 import { cn, formatNumberToReadableString } from '@/lib/utils'
 import { TGuildMemberStatus } from '@/types/types'
 import Image from 'next/image'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu'
-import {
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogTitle,
-} from '../ui/alert-dialog'
 import { toast } from 'sonner'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog'
 import {
   depositBalance,
   withdrawBalance,
@@ -78,8 +51,39 @@ import {
   registerUser,
   bonusBalance,
 } from '@/actions/database/user.action'
-import { Badge } from '../ui/badge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface UserTableProps {
   users: TGuildMemberStatus[]

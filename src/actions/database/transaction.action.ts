@@ -7,15 +7,21 @@ import { getDiscordGuildMembers } from '../discord/member.action'
 import { FilterQuery } from 'mongoose'
 import { ITransaction, ITransactionCounts } from '@/types/types'
 
+function escapeRegExp(string: string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export const getTransactions = async (
   guildId: string,
   session: Session,
   page: number = 1,
   limit: number = 50,
   search?: string,
-  searchAdmin?: string,
+  adminSearch?: string,
   filterType?: string[],
   filterSource?: string[],
+  dateFrom?: string,
+  dateTo?: string,
   sort?: string
 ): Promise<{ transactions: ITransaction[]; total: number }> => {
   if (!session.accessToken) return { transactions: [], total: 0 }
@@ -26,21 +32,23 @@ export const getTransactions = async (
   const andFilters: FilterQuery<TransactionDoc>[] = []
 
   if (search) {
-    const regex = new RegExp(search, 'i')
+    const regex = new RegExp(escapeRegExp(search), 'i')
     andFilters.push({ userId: regex })
   }
 
-  if (searchAdmin) {
-    const regex = new RegExp(searchAdmin, 'i')
-    andFilters.push({
-      $or: [{ handledBy: regex }, { betId: regex }],
-    })
+  if (adminSearch) {
+    const regex = new RegExp(escapeRegExp(adminSearch), 'i')
+    andFilters.push({ $or: [{ handledBy: regex }, { betId: regex }] })
   }
 
   if (filterType && filterType.length)
     andFilters.push({ type: { $in: filterType } })
   if (filterSource && filterSource.length)
     andFilters.push({ source: { $in: filterSource } })
+
+  if (dateFrom && dateTo) {
+    query.createdAt = { $gte: new Date(dateFrom), $lte: new Date(dateTo) }
+  }
 
   if (andFilters.length > 0) query.$and = andFilters
 
@@ -133,7 +141,7 @@ export const getTransactionCounts = async (
   filterType?: string[],
   filterSource?: string[],
   search?: string,
-  searchAdmin?: string
+  adminSearch?: string
 ): Promise<ITransactionCounts> => {
   if (!session.accessToken) {
     return {
@@ -152,12 +160,12 @@ export const getTransactionCounts = async (
   const andFilters: FilterQuery<TransactionDoc>[] = []
 
   if (search) {
-    const regex = new RegExp(search, 'i')
+    const regex = new RegExp(escapeRegExp(search), 'i')
     andFilters.push({ userId: regex })
   }
 
-  if (searchAdmin) {
-    const regex = new RegExp(searchAdmin, 'i')
+  if (adminSearch) {
+    const regex = new RegExp(escapeRegExp(adminSearch), 'i')
     andFilters.push({ $or: [{ handledBy: regex }, { betId: regex }] })
   }
 

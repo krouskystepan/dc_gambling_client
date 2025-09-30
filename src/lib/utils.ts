@@ -193,3 +193,7 @@ export const formatNumberToReadableString = (number: number): string => {
 
   return number < 0 ? `-${formatted}` : formatted
 }
+
+export const formatNumberWithSpaces = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+}

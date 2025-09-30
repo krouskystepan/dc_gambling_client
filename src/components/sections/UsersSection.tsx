@@ -1,9 +1,9 @@
 import { authOptions } from '@/lib/authOptions'
 import { getServerSession } from 'next-auth'
-import UserTable from '../tables/UserTable'
 import { getUserWithRegistrationStatus } from '@/actions/database/user.action'
+import UserTable from '../tables/users/UserTable'
 
-const UsersList = async ({ guildId }: { guildId: string }) => {
+const UsersSection = async ({ guildId }: { guildId: string }) => {
   const session = await getServerSession(authOptions)
   const users = await getUserWithRegistrationStatus(guildId, session)
 
@@ -16,4 +16,4 @@ const UsersList = async ({ guildId }: { guildId: string }) => {
   )
 }
 
-export default UsersList
+export default UsersSection

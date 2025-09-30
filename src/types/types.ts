@@ -79,11 +79,23 @@ export interface ITransaction
   nickname: string | null
   avatar: string
   handledByUsername?: string | null
+  dateFrom?: string
+  dateTo?: string
 }
 
 export interface ITransactionCounts {
   type: Record<TransactionDoc['type'], number>
   source: Record<TransactionDoc['source'], number>
+}
+
+export interface TUpdateUrl {
+  page: number
+  limit?: number
+  search?: string
+  adminSearch?: string
+  filterType?: string
+  filterSource?: string
+  sort?: string
 }
 
 // Cache

@@ -1,12 +1,12 @@
 import {
-  getTransactionCounts,
   getTransactions,
+  getTransactionCounts,
 } from '@/actions/database/transaction.action'
 import { authOptions } from '@/lib/authOptions'
 import { getServerSession } from 'next-auth'
-import TransactionTable from '../tables/TransactionTable'
+import TransactionTable from '../tables/transactions/TransactionTable'
 
-const TransactionList = async ({
+const TransactionsSection = async ({
   guildId,
   searchParams,
 }: {
@@ -15,9 +15,11 @@ const TransactionList = async ({
     page?: string
     limit?: string
     search?: string
-    searchAdmin?: string
+    adminSearch?: string
     filterType?: string
     filterSource?: string
+    dateFrom?: string
+    dateTo?: string
     sort?: string
   }
 }) => {
@@ -36,9 +38,11 @@ const TransactionList = async ({
     page,
     limit,
     searchParams?.search || undefined,
-    searchParams?.searchAdmin || undefined,
+    searchParams?.adminSearch || undefined,
     filterType?.length ? filterType : undefined,
     filterSource?.length ? filterSource : undefined,
+    searchParams?.dateFrom || undefined,
+    searchParams?.dateTo || undefined,
     searchParams?.sort || undefined
   )
 
@@ -48,7 +52,7 @@ const TransactionList = async ({
     filterType?.length ? filterType : undefined,
     filterSource?.length ? filterSource : undefined,
     searchParams?.search || undefined,
-    searchParams?.searchAdmin || undefined
+    searchParams?.adminSearch || undefined
   )
 
   return (
@@ -64,4 +68,4 @@ const TransactionList = async ({
   )
 }
 
-export default TransactionList
+export default TransactionsSection

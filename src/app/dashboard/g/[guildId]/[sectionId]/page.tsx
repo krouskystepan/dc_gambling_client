@@ -3,8 +3,8 @@ import CasinoSettingsForm from '@/components/forms/CasinoSettingsForm'
 import ChannelsForm from '@/components/forms/ChannelsForm'
 import ManagerRoleForm from '@/components/forms/ManagerRoleForm'
 import VipSettingsForm from '@/components/forms/VipSettingsForm'
-import TransactionList from '@/components/lists/TransactionList'
-import UsersList from '@/components/lists/UsersList'
+import TransactionsSection from '@/components/sections/TransactionsSection'
+import UsersSection from '@/components/sections/UsersSection'
 
 interface SectionPageProps {
   params: Promise<{ guildId: string; sectionId: string }>
@@ -12,7 +12,7 @@ interface SectionPageProps {
     page?: string
     limit?: string
     search?: string
-    searchAdmin?: string
+    adminSearch?: string
     filterType?: string
     filterSource?: string
   }>
@@ -26,7 +26,7 @@ const SectionPage = async ({ params, searchParams }: SectionPageProps) => {
     switch (sectionId) {
       case 'transactions':
         return (
-          <TransactionList
+          <TransactionsSection
             guildId={guildId}
             searchParams={resolvedSearchParams}
           />
@@ -40,7 +40,7 @@ const SectionPage = async ({ params, searchParams }: SectionPageProps) => {
       case 'managerRoleId':
         return <ManagerRoleForm guildId={guildId} />
       case 'users':
-        return <UsersList guildId={guildId} />
+        return <UsersSection guildId={guildId} />
       case 'bonusSettings':
         return <BonusesForm guildId={guildId} />
       case 'vips':
