@@ -18,8 +18,8 @@ import TransactionTableBody from './TransactionTableBody'
 import { useUpdateUrl } from '@/hooks/useUpdateUrl'
 import TransactionTablePagination from './TransactionTablePagination'
 import TransactionTableFilters from './TransactionTableFilters'
+import TransactionTableSummaryPanel from './TransactionTableSummaryPanel'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
-import TransactionTableSummaryPanel from './transactionTableSummaryPanel'
 
 interface TransactionTableProps {
   transactions: ITransaction[]

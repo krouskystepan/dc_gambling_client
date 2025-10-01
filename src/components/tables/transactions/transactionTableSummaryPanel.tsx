@@ -10,8 +10,39 @@ import {
 } from '@/lib/utils'
 import { ITransactionCounts } from '@/types/types'
 import { CircleQuestionMark } from 'lucide-react'
-import React from 'react'
 
+const getCashFlowFormula = (counts: ITransactionCounts) => {
+  const { deposit, withdraw } = counts.type
+  let formula = ''
+
+  if (deposit) formula += 'deposit'
+  if (withdraw) formula += formula ? ' - withdraw' : 'withdraw'
+
+  return formula || 'No active types'
+}
+
+const getPnLFormula = (counts: ITransactionCounts) => {
+  const positiveTypes: (keyof ITransactionCounts['type'])[] = [
+    'win',
+    'bonus',
+    'refund',
+  ]
+  const negativeTypes: (keyof ITransactionCounts['type'])[] = ['bet', 'vip']
+
+  let formula = ''
+
+  // positive types: + win + bonus + refund
+  positiveTypes.forEach((t) => {
+    if (counts.type[t]) formula += formula ? ` + ${t}` : t
+  })
+
+  // negative types: - bet - vip
+  negativeTypes.forEach((t) => {
+    if (counts.type[t]) formula += formula ? ` - ${t}` : t
+  })
+
+  return formula || 'No active types'
+}
 interface SummaryPanelProps {
   cashFlow: number
   gamePnL: number
@@ -23,10 +54,12 @@ const TransactionTableSummaryPanel = ({
   gamePnL,
   counts,
 }: SummaryPanelProps) => {
-  const formatCurrency = (value: number) =>
-    value < 0
-      ? `-$${formatNumberWithSpaces(Math.abs(value))}`
-      : `$${formatNumberWithSpaces(value)}`
+  const formatCurrency = (value: number) => {
+    const roundedValue = Math.round(value)
+    return roundedValue < 0
+      ? `-$${formatNumberWithSpaces(Math.abs(roundedValue))}`
+      : `$${formatNumberWithSpaces(roundedValue)}`
+  }
 
   return (
     <section className="mt-4 flex justify-center gap-8 rounded-md border p-4">
@@ -35,14 +68,14 @@ const TransactionTableSummaryPanel = ({
         value={cashFlow}
         formatter={formatCurrency}
         positiveIsGreen
-        tooltip="deposit - withdraw"
+        tooltip={getCashFlowFormula(counts)}
       />
       <SummaryItem
         label="Profit / Loss"
         value={gamePnL}
         formatter={formatCurrency}
         positiveIsGreen
-        tooltip="win + bonus + refund - bet - vip"
+        tooltip={getPnLFormula(counts)}
       />
       <SummaryItem
         label="Deposits"
