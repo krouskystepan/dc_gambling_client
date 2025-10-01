@@ -23,8 +23,14 @@ export const getTransactions = async (
   dateFrom?: string,
   dateTo?: string,
   sort?: string
-): Promise<{ transactions: ITransaction[]; total: number }> => {
-  if (!session.accessToken) return { transactions: [], total: 0 }
+): Promise<{
+  transactions: ITransaction[]
+  total: number
+  gamePnL: number
+  cashFlow: number
+}> => {
+  if (!session.accessToken)
+    return { transactions: [], total: 0, gamePnL: 0, cashFlow: 0 }
 
   await connectToDatabase()
 
@@ -52,6 +58,51 @@ export const getTransactions = async (
 
   if (andFilters.length > 0) query.$and = andFilters
 
+  const total = await Transaction.countDocuments(query)
+
+  const totalsAgg = await Transaction.aggregate([
+    { $match: query },
+    {
+      $group: {
+        _id: null,
+        gamePnL: {
+          $sum: {
+            $switch: {
+              branches: [
+                {
+                  case: { $in: ['$type', ['bet', 'vip']] },
+                  then: '$amount',
+                },
+                {
+                  case: { $in: ['$type', ['win', 'bonus', 'refund']] },
+                  then: { $multiply: ['$amount', -1] },
+                },
+              ],
+              default: 0,
+            },
+          },
+        },
+        cashFlow: {
+          $sum: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$type', 'deposit'] }, then: '$amount' },
+                {
+                  case: { $eq: ['$type', 'withdraw'] },
+                  then: { $multiply: ['$amount', -1] },
+                },
+              ],
+              default: 0,
+            },
+          },
+        },
+      },
+    },
+  ])
+
+  const gamePnL = totalsAgg.length ? totalsAgg[0].gamePnL : 0
+  const cashFlow = totalsAgg.length ? totalsAgg[0].cashFlow : 0
+
   let sortObj: Record<string, 1 | -1> = { createdAt: -1 }
   if (sort) {
     sortObj = {}
@@ -61,14 +112,13 @@ export const getTransactions = async (
     })
   }
 
-  const total = await Transaction.countDocuments(query)
-
   const transactions = await Transaction.find(query)
     .sort(sortObj)
     .skip((page - 1) * limit)
     .limit(limit)
 
-  if (!transactions.length) return { transactions: [], total }
+  if (!transactions.length)
+    return { transactions: [], total, gamePnL, cashFlow }
 
   const userIds = Array.from(
     new Set(
@@ -77,8 +127,7 @@ export const getTransactions = async (
   )
 
   const discordMembers = await getDiscordGuildMembers(guildId)
-
-  if (!discordMembers) return { transactions: [], total: 0 }
+  if (!discordMembers) return { transactions: [], total: 0, gamePnL, cashFlow }
 
   const discordMap = new Map(
     discordMembers
@@ -114,7 +163,7 @@ export const getTransactions = async (
     }
   })
 
-  return { transactions: transactionsWithUser, total }
+  return { transactions: transactionsWithUser, total, gamePnL, cashFlow }
 }
 
 const typeBadgeMap: Record<TransactionDoc['type'], string> = {

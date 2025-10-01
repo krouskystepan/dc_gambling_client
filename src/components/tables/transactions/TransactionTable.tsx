@@ -19,6 +19,7 @@ import { useUpdateUrl } from '@/hooks/useUpdateUrl'
 import TransactionTablePagination from './TransactionTablePagination'
 import TransactionTableFilters from './TransactionTableFilters'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import TransactionTableSummaryPanel from './transactionTableSummaryPanel'
 
 interface TransactionTableProps {
   transactions: ITransaction[]
@@ -28,6 +29,8 @@ interface TransactionTableProps {
   page: number
   limit: number
   total: number
+  gamePnL: number
+  cashFlow: number
 }
 
 const TransactionTable = ({
@@ -38,6 +41,8 @@ const TransactionTable = ({
   page,
   limit,
   total,
+  gamePnL,
+  cashFlow,
 }: TransactionTableProps) => {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: page - 1,
@@ -183,6 +188,12 @@ const TransactionTable = ({
           <TransactionTableBody table={table} isLoading={isLoading} />
         </Table>
       </div>
+
+      <TransactionTableSummaryPanel
+        cashFlow={cashFlow}
+        gamePnL={gamePnL}
+        counts={transactionCounts}
+      />
 
       <TransactionTablePagination table={table} total={total} />
     </div>

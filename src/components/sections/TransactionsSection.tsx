@@ -32,7 +32,7 @@ const TransactionsSection = async ({
   const filterType = searchParams?.filterType?.split(',').filter(Boolean)
   const filterSource = searchParams?.filterSource?.split(',').filter(Boolean)
 
-  const { transactions, total } = await getTransactions(
+  const { transactions, total, gamePnL, cashFlow } = await getTransactions(
     guildId,
     session,
     page,
@@ -64,6 +64,8 @@ const TransactionsSection = async ({
       page={page}
       limit={limit}
       total={total}
+      gamePnL={gamePnL}
+      cashFlow={cashFlow}
     />
   )
 }
