@@ -18,7 +18,7 @@ import TransactionTableBody from './TransactionTableBody'
 import { useUpdateUrl } from '@/hooks/useUpdateUrl'
 import TransactionTablePagination from './TransactionTablePagination'
 import TransactionTableFilters from './TransactionTableFilters'
-import TransactionTableSummaryPanel from './TransactionTableSummaryPanel'
+import TransactionTableSummary from './TransactionTableSummary'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 
 interface TransactionTableProps {
@@ -189,7 +189,7 @@ const TransactionTable = ({
         </Table>
       </div>
 
-      <TransactionTableSummaryPanel
+      <TransactionTableSummary
         cashFlow={cashFlow}
         gamePnL={gamePnL}
         counts={transactionCounts}

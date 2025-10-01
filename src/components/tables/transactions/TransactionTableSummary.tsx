@@ -43,13 +43,14 @@ const getPnLFormula = (counts: ITransactionCounts) => {
 
   return formula || 'No active types'
 }
+
 interface SummaryPanelProps {
   cashFlow: number
   gamePnL: number
   counts: ITransactionCounts
 }
 
-const TransactionTableSummaryPanel = ({
+const TransactionTableSummary = ({
   cashFlow,
   gamePnL,
   counts,
@@ -165,4 +166,4 @@ const SummaryItem = ({
   )
 }
 
-export default TransactionTableSummaryPanel
+export default TransactionTableSummary
