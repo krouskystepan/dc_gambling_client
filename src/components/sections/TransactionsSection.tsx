@@ -52,7 +52,9 @@ const TransactionsSection = async ({
     filterType?.length ? filterType : undefined,
     filterSource?.length ? filterSource : undefined,
     searchParams?.search || undefined,
-    searchParams?.adminSearch || undefined
+    searchParams?.adminSearch || undefined,
+    searchParams?.dateFrom || undefined,
+    searchParams?.dateTo || undefined
   )
 
   return (

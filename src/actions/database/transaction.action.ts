@@ -53,7 +53,11 @@ export const getTransactions = async (
     andFilters.push({ source: { $in: filterSource } })
 
   if (dateFrom && dateTo) {
-    query.createdAt = { $gte: new Date(dateFrom), $lte: new Date(dateTo) }
+    const from = new Date(dateFrom)
+    from.setHours(0, 0, 0, 0)
+    const to = new Date(dateTo)
+    to.setHours(23, 59, 59, 999)
+    query.createdAt = { $gte: from, $lte: to }
   }
 
   if (andFilters.length > 0) query.$and = andFilters
@@ -190,7 +194,9 @@ export const getTransactionCounts = async (
   filterType?: string[],
   filterSource?: string[],
   search?: string,
-  adminSearch?: string
+  adminSearch?: string,
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<ITransactionCounts> => {
   if (!session.accessToken) {
     return {
@@ -224,6 +230,14 @@ export const getTransactionCounts = async (
 
   if (filterSource && filterSource.length) {
     andFilters.push({ source: { $in: filterSource } })
+  }
+
+  if (dateFrom && dateTo) {
+    const from = new Date(dateFrom)
+    from.setHours(0, 0, 0, 0)
+    const to = new Date(dateTo)
+    to.setHours(23, 59, 59, 999)
+    andFilters.push({ createdAt: { $gte: from, $lte: to } })
   }
 
   if (andFilters.length > 0) query.$and = andFilters
