@@ -15,7 +15,6 @@ import {
 import { Label } from '../ui/label'
 import { IGuildChannel, TChannelsFormValues } from '@/types/types'
 import SaveButton from '../SaveButton'
-import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
 import {
   atmChannelsFormSchema,
@@ -50,7 +49,6 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
   })
 
   const [channels, setChannels] = useState<IGuildChannel[]>([])
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,8 +72,6 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
           logs: channels?.prediction?.logs || '',
         },
       })
-
-      setLoading(false)
     }
 
     fetchData()
@@ -93,8 +89,6 @@ const ChannelsForm = ({ guildId }: { guildId: string }) => {
       toast.error('Failed to save channels', { id: toastId })
     }
   }
-
-  if (loading) return <LoadingScreen />
 
   return (
     <FormProvider {...form}>

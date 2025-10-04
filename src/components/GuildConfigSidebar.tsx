@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import {
   Crown,
@@ -11,6 +13,8 @@ import {
   Award,
   Landmark,
 } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { undefined } from 'zod'
 
 const LINKS = [
   {
@@ -51,6 +55,9 @@ const GuildConfigSidebar = ({
   guildName,
   isAdmin,
 }: GuildConfigSidebarProps) => {
+  const pathname = usePathname()
+  const activeSectionId = pathname.split('/')[4] || undefined
+
   return (
     <section className="w-60 bg-black/40 border-r border-yellow-500/10 flex flex-col">
       <div className="p-3 text-center text-lg font-bold text-yellow-400">
@@ -79,8 +86,12 @@ const GuildConfigSidebar = ({
                             pathname: `/dashboard/g/${guildId}/${link.id}`,
                           }
                     }
-                    className="flex items-center gap-2 px-5 py-2 text-gray-200 rounded hover:bg-yellow-500/10 hover:text-yellow-400 transition text-sm"
+                    className="flex items-center gap-2 px-5 py-2 text-gray-200 rounded hover:bg-yellow-500/10 hover:text-yellow-400 transition text-sm relative overflow-hidden"
                   >
+                    {activeSectionId === link.id ||
+                    (link.id === 'home' && activeSectionId === undefined) ? (
+                      <div className="absolute left-0 h-full w-0.5 bg-yellow-400" />
+                    ) : null}
                     {Icon && <Icon size={16} />}
                     {link.label}
                   </Link>

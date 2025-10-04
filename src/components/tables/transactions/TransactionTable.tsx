@@ -44,6 +44,8 @@ const TransactionTable = ({
   gamePnL,
   cashFlow,
 }: TransactionTableProps) => {
+  const [data, setData] = useState(transactions)
+
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: page - 1,
     pageSize: limit,
@@ -62,14 +64,19 @@ const TransactionTable = ({
   const debouncedUpdateUrl = useDebouncedCallback(updateUrl, 300)
 
   useEffect(() => {
+    setData(transactions)
     setIsLoading(false)
   }, [transactions])
 
   const searchParams = useSearchParams()
 
+  const handleDelete = (id: string) => {
+    setData((prev) => prev.filter((t) => t.id !== id))
+  }
+
   const table = useReactTable({
-    data: transactions,
-    columns: transactionsColumns,
+    data,
+    columns: transactionsColumns(handleDelete),
     state: {
       pagination,
       sorting,
@@ -162,11 +169,7 @@ const TransactionTable = ({
     table.setPageIndex(pageFromUrl - 1)
     table.setPageSize(limitFromUrl)
 
-    console.log(filters)
-
     table.setColumnFilters(filters)
-
-    // table.getColumn('createdAt')?.setFilterValue([dateFrom, dateTo])
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

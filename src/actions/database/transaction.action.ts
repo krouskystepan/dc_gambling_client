@@ -2,10 +2,11 @@
 
 import { connectToDatabase } from '@/lib/utils'
 import Transaction, { TransactionDoc } from '@/models/Transaction'
-import { Session } from 'next-auth'
+import { getServerSession, Session } from 'next-auth'
 import { getDiscordGuildMembers } from '../discord/member.action'
 import { FilterQuery } from 'mongoose'
 import { ITransaction, ITransactionCounts } from '@/types/types'
+import { authOptions } from '@/lib/authOptions'
 
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -267,4 +268,34 @@ export const getTransactionCounts = async (
   })
 
   return { type: typeCounts, source: sourceCounts }
+}
+
+export const deleteTransaction = async (
+  transactionId: string
+): Promise<{ success: boolean; message?: string }> => {
+  const session = await getServerSession(authOptions)
+
+  if (!session || !session.accessToken) {
+    return { success: false, message: 'Unauthorized' }
+  }
+
+  if (!transactionId) {
+    return { success: false, message: 'Transaction ID is required' }
+  }
+
+  await connectToDatabase()
+
+  const query: FilterQuery<typeof Transaction> = { _id: transactionId }
+
+  try {
+    const deleted = await Transaction.findOneAndDelete(query)
+    if (!deleted) {
+      return { success: false, message: 'Transaction not found' }
+    }
+
+    return { success: true, message: 'Transaction deleted' }
+  } catch (error) {
+    console.error('Error deleting transaction:', error)
+    return { success: false, message: 'Failed to delete transaction' }
+  }
 }

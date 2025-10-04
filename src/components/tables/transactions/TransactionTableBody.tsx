@@ -2,7 +2,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { ITransaction } from '@/types/types'
 import { flexRender, Table } from '@tanstack/react-table'
-import { transactionsColumns } from './transactionColumns'
 
 const TransactionTableBody = ({
   table,
@@ -41,7 +40,7 @@ const TransactionTableBody = ({
       ) : (
         <TableRow>
           <TableCell
-            colSpan={transactionsColumns.length}
+            colSpan={table.getHeaderGroups()[0]?.headers.length}
             className="text-center py-6"
           >
             No results.

@@ -2,11 +2,10 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, FormProvider, Path, UseFormReturn } from 'react-hook-form'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Form, FormField, FormItem, FormControl, FormMessage } from '../ui/form'
 import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
-import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
 import { casinoSettingsSchema } from '@/types/schemas'
 import { Input } from '../ui/input'
@@ -134,8 +133,6 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
     defaultValues: defaultCasinoSettings,
   })
 
-  const [loading, setLoading] = useState(false)
-
   const watchedValues = form.watch()
 
   useEffect(() => {
@@ -147,8 +144,6 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
         }
       } catch (err) {
         console.error(err)
-      } finally {
-        setLoading(false)
       }
     }
     fetchSettings()
@@ -164,8 +159,6 @@ const CasinoSettingsForm = ({ guildId }: { guildId: string }) => {
       toast.error('Failed to save casino settings', { id: toastId })
     }
   }
-
-  if (loading) return <LoadingScreen />
 
   return (
     <FormProvider {...form}>

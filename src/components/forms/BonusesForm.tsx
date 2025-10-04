@@ -2,11 +2,10 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, FormProvider, useWatch } from 'react-hook-form'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { FormField, FormItem, FormControl, FormMessage, Form } from '../ui/form'
 import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
-import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
 import { Input } from '../ui/input'
 import { formatNumberToReadableString } from '@/lib/utils'
@@ -42,8 +41,6 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
     },
   })
 
-  const [loading, setLoading] = useState(true)
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,8 +48,6 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
         if (settings) form.reset(settings)
       } catch (err) {
         console.error(err)
-      } finally {
-        setLoading(false)
       }
     }
     fetchData()
@@ -138,8 +133,6 @@ const BonusesForm = ({ guildId }: { guildId: string }) => {
 
     simRewardStreak++
   }
-
-  if (loading) return <LoadingScreen />
 
   return (
     <FormProvider {...form}>

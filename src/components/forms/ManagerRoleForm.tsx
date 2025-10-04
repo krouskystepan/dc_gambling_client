@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { Form, FormField, FormItem, FormControl, FormMessage } from '../ui/form'
 import { Label } from '../ui/label'
 import SaveButton from '../SaveButton'
-import LoadingScreen from '../states/Loading'
 import { toast } from 'sonner'
 import { IGuildRole, TManagerRoleValues } from '@/types/types'
 import {
@@ -32,7 +31,6 @@ const ManagerRoleForm = ({ guildId }: { guildId: string }) => {
   })
 
   const [roles, setRoles] = useState<IGuildRole[]>([])
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,8 +46,6 @@ const ManagerRoleForm = ({ guildId }: { guildId: string }) => {
         })
       } catch (err) {
         console.error(err)
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -66,8 +62,6 @@ const ManagerRoleForm = ({ guildId }: { guildId: string }) => {
       toast.error('Failed to save manager role', { id: toastId })
     }
   }
-
-  if (loading) return <LoadingScreen />
 
   return (
     <FormProvider {...form}>

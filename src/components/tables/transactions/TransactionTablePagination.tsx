@@ -59,17 +59,21 @@ const TransactionTablePagination = ({
           aria-live="polite"
         >
           <span className="text-foreground">
-            {table.getState().pagination.pageIndex *
-              table.getState().pagination.pageSize +
-              1}
-            -
-            {Math.min(
-              (table.getState().pagination.pageIndex + 1) *
-                table.getState().pagination.pageSize,
-              total
+            {formatNumberWithSpaces(
+              table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
+                1
             )}
-          </span>{' '}
-          of{' '}
+            {' - '}
+            {formatNumberWithSpaces(
+              Math.min(
+                (table.getState().pagination.pageIndex + 1) *
+                  table.getState().pagination.pageSize,
+                total
+              )
+            )}
+          </span>
+          {' of '}
           <span className="text-foreground">
             {formatNumberWithSpaces(total)}
           </span>
