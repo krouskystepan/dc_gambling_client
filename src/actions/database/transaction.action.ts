@@ -16,7 +16,7 @@ export const getTransactions = async (
   guildId: string,
   session: Session,
   page: number = 1,
-  limit: number = 50,
+  limit: number = 15,
   search?: string,
   adminSearch?: string,
   filterType?: string[],
@@ -31,6 +31,9 @@ export const getTransactions = async (
   cashFlow: number
 }> => {
   if (!session.accessToken)
+    return { transactions: [], total: 0, gamePnL: 0, cashFlow: 0 }
+
+  if (limit < 1 || limit > 50 || page < 1)
     return { transactions: [], total: 0, gamePnL: 0, cashFlow: 0 }
 
   await connectToDatabase()
