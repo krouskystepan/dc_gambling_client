@@ -35,15 +35,18 @@ const TransactionSchema = new Schema<TransactionDoc>(
   { timestamps: { createdAt: true, updatedAt: false } }
 )
 
-TransactionSchema.index({
-  guildId: 1,
-  userId: 1,
-  createdAt: -1,
-  betId: 1,
-  type: 1,
-  source: 1,
-  handledBy: 1,
-})
+// for pagination / sorting
+TransactionSchema.index({ guildId: 1, createdAt: -1 })
+// filter + sort
+TransactionSchema.index({ guildId: 1, type: 1, createdAt: -1 })
+// filter + sort
+TransactionSchema.index({ guildId: 1, source: 1, createdAt: -1 })
+// user search
+TransactionSchema.index({ guildId: 1, userId: 1, createdAt: -1 })
+// admin search
+TransactionSchema.index({ guildId: 1, handledBy: 1, createdAt: -1 })
+// for bet lookups
+TransactionSchema.index({ guildId: 1, betId: 1 })
 
 export default models.Transaction ||
   model<TransactionDoc>('Transaction', TransactionSchema)
